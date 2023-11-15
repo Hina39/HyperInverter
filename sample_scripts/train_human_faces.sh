@@ -1,5 +1,5 @@
-EXPERIMENT_DIR=""
-W_ENCODER_PATH=""
+EXPERIMENT_DIR="/home/challenger/hyperinverter/experiment"
+W_ENCODER_PATH="/home/challenger/hyperinverter/pretrained_models/w_encoder_e4e_ffhq_encode.pt"
 GPU_ID=0
 
 CUDA_VISIBLE_DEVICES="$GPU_ID" \
@@ -9,7 +9,7 @@ python scripts/train.py \
 --w_encoder_path="$W_ENCODER_PATH" \
 --output_size=1024 \
 --exp_dir="$EXPERIMENT_DIR" \
---batch_size=8 \
+--batch_size=2 \
 --batch_size_used_with_adv_loss=4 \
 --workers=4 \
 --val_interval=1000 \

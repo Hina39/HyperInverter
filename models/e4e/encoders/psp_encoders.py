@@ -3,7 +3,12 @@ from enum import Enum
 
 import numpy as np
 import torch
-from models.e4e.encoders.helpers import _upsample_add, bottleneck_IR, bottleneck_IR_SE, get_blocks
+from models.e4e.encoders.helpers import (
+    _upsample_add,
+    bottleneck_IR,
+    bottleneck_IR_SE,
+    get_blocks,
+)
 from models.e4e.stylegan2.model import EqualLinear
 from torch import nn
 from torch.nn import BatchNorm2d, Conv2d, Module, PReLU, Sequential
@@ -38,9 +43,15 @@ class GradualStyleBlock(Module):
         self.spatial = spatial
         num_pools = int(np.log2(spatial))
         modules = []
-        modules += [Conv2d(in_c, out_c, kernel_size=3, stride=2, padding=1), nn.LeakyReLU()]
+        modules += [
+            Conv2d(in_c, out_c, kernel_size=3, stride=2, padding=1),
+            nn.LeakyReLU(),
+        ]
         for i in range(num_pools - 1):
-            modules += [Conv2d(out_c, out_c, kernel_size=3, stride=2, padding=1), nn.LeakyReLU()]
+            modules += [
+                Conv2d(out_c, out_c, kernel_size=3, stride=2, padding=1),
+                nn.LeakyReLU(),
+            ]
         self.convs = nn.Sequential(*modules)
         self.linear = EqualLinear(out_c, out_c, lr_mul=1)
 
@@ -61,11 +72,17 @@ class GradualStyleEncoder(Module):
             unit_module = bottleneck_IR
         elif mode == "ir_se":
             unit_module = bottleneck_IR_SE
-        self.input_layer = Sequential(Conv2d(3, 64, (3, 3), 1, 1, bias=False), BatchNorm2d(64), PReLU(64))
+        self.input_layer = Sequential(
+            Conv2d(3, 64, (3, 3), 1, 1, bias=False), BatchNorm2d(64), PReLU(64)
+        )
         modules = []
         for block in blocks:
             for bottleneck in block:
-                modules.append(unit_module(bottleneck.in_channel, bottleneck.depth, bottleneck.stride))
+                modules.append(
+                    unit_module(
+                        bottleneck.in_channel, bottleneck.depth, bottleneck.stride
+                    )
+                )
         self.body = Sequential(*modules)
 
         self.styles = nn.ModuleList()
@@ -123,11 +140,17 @@ class Encoder4Editing(Module):
             unit_module = bottleneck_IR
         elif mode == "ir_se":
             unit_module = bottleneck_IR_SE
-        self.input_layer = Sequential(Conv2d(3, 64, (3, 3), 1, 1, bias=False), BatchNorm2d(64), PReLU(64))
+        self.input_layer = Sequential(
+            Conv2d(3, 64, (3, 3), 1, 1, bias=False), BatchNorm2d(64), PReLU(64)
+        )
         modules = []
         for block in blocks:
             for bottleneck in block:
-                modules.append(unit_module(bottleneck.in_channel, bottleneck.depth, bottleneck.stride))
+                modules.append(
+                    unit_module(
+                        bottleneck.in_channel, bottleneck.depth, bottleneck.stride
+                    )
+                )
         self.body = Sequential(*modules)
 
         self.styles = nn.ModuleList()

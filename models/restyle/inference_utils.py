@@ -3,7 +3,11 @@ import torch
 
 def get_average_image(net, opts):
     avg_image = net(
-        net.latent_avg.unsqueeze(0), input_code=True, randomize_noise=False, return_latents=False, average_code=True
+        net.latent_avg.unsqueeze(0),
+        input_code=True,
+        randomize_noise=False,
+        return_latents=False,
+        average_code=True,
     )[0]
     avg_image = avg_image.to("cuda").float().detach()
     if opts.dataset_type == "cars_encode":
@@ -17,13 +21,19 @@ def run_on_batch(inputs, net, opts, avg_image):
     results_latent = {idx: [] for idx in range(inputs.shape[0])}
     for iter in range(opts.n_iters_per_batch):
         if iter == 0:
-            avg_image_for_batch = avg_image.unsqueeze(0).repeat(inputs.shape[0], 1, 1, 1)
+            avg_image_for_batch = avg_image.unsqueeze(0).repeat(
+                inputs.shape[0], 1, 1, 1
+            )
             x_input = torch.cat([inputs, avg_image_for_batch], dim=1)
         else:
             x_input = torch.cat([inputs, y_hat], dim=1)
 
         y_hat, latent = net.forward(
-            x_input, latent=latent, randomize_noise=False, return_latents=True, resize=opts.resize_outputs
+            x_input,
+            latent=latent,
+            randomize_noise=False,
+            return_latents=True,
+            resize=opts.resize_outputs,
         )
 
         if opts.dataset_type == "cars_encode":

@@ -23,8 +23,9 @@ class EditComparison:
         self.latent_editor = LatentEditorWrapper(args.domain)
 
     def create_output_dirs(self, full_image_name):
-
-        output_base_dir_path = f"{self.args.output_dir}/{self.args.input_data_id}/{full_image_name}"
+        output_base_dir_path = (
+            f"{self.args.output_dir}/{self.args.input_data_id}/{full_image_name}"
+        )
         os.makedirs(output_base_dir_path, exist_ok=True)
 
         self.edited_base_dir = f"{output_base_dir_path}/edited_images"
@@ -32,7 +33,9 @@ class EditComparison:
 
         if self.args.save_edited_images:
             # For quantitative evalution
-            self.eval_edited_base_dir = f"{self.args.output_dir}/{self.args.input_data_id}/eval_edited_images"
+            self.eval_edited_base_dir = (
+                f"{self.args.output_dir}/{self.args.input_data_id}/eval_edited_images"
+            )
             os.makedirs(self.eval_edited_base_dir, exist_ok=True)
 
     def get_image_latent_codes(self, image_name, methods):
@@ -54,12 +57,22 @@ class EditComparison:
         return image_latents, added_weights_dict
 
     def save_interfacegan_edits(
-        self, image_latents, added_weights, factors, direction, resize, is_save_edited_images, image_name, gif_speed
+        self,
+        image_latents,
+        added_weights,
+        factors,
+        direction,
+        resize,
+        is_save_edited_images,
+        image_name,
+        gif_speed,
     ):
         methods = image_latents.keys()
         inv_edits = {}
         for method, latent in image_latents.items():
-            inv_edits[method] = self.latent_editor.get_single_interface_gan_edits_with_direction(
+            inv_edits[
+                method
+            ] = self.latent_editor.get_single_interface_gan_edits_with_direction(
                 latent, factors, direction
             )
 
@@ -73,27 +86,40 @@ class EditComparison:
             os.makedirs(direction_saved_dir)
 
             if is_save_edited_images:
-                edited_image_save_dir = os.path.join(direction_saved_dir, "edited_images")
+                edited_image_save_dir = os.path.join(
+                    direction_saved_dir, "edited_images"
+                )
                 os.makedirs(edited_image_save_dir, exist_ok=True)
 
             if self.args.save_edited_images:
-                quan_eval_editing_dir = os.path.join(self.eval_edited_base_dir, direction)
+                quan_eval_editing_dir = os.path.join(
+                    self.eval_edited_base_dir, direction
+                )
                 os.makedirs(quan_eval_editing_dir, exist_ok=True)
                 for factor in factors:
                     os.makedirs(f"{quan_eval_editing_dir}/{factor}", exist_ok=True)
                     for methods in methods:
-                        os.makedirs(f"{quan_eval_editing_dir}/{factor}/{method}", exist_ok=True)
+                        os.makedirs(
+                            f"{quan_eval_editing_dir}/{factor}/{method}", exist_ok=True
+                        )
 
             edited_latents = inv_edits[method]
             edited_images = []
             for factor, edited_latent in zip(factors, edited_latents):
                 saved_image = get_image_from_latent(
-                    edited_latent, added_weights[method], self.experiment_creator.G, resize
+                    edited_latent,
+                    added_weights[method],
+                    self.experiment_creator.G,
+                    resize,
                 )
                 edited_images.append(saved_image)
                 if is_save_edited_images:
-                    saved_image.save(os.path.join(edited_image_save_dir, f"{factor}.png"))
-                    saved_image.save(f"{quan_eval_editing_dir}/{factor}/{method}/{image_name}.png")
+                    saved_image.save(
+                        os.path.join(edited_image_save_dir, f"{factor}.png")
+                    )
+                    saved_image.save(
+                        f"{quan_eval_editing_dir}/{factor}/{method}/{image_name}.png"
+                    )
 
             # Create gif animation
             edited_images += edited_images[::-1]
@@ -107,64 +133,22 @@ class EditComparison:
             )
 
     def save_ganspace_edits(
-        self, image_latents, added_weights, factors, direction, resize, is_save_edited_images, image_name, gif_speed
+        self,
+        image_latents,
+        added_weights,
+        factors,
+        direction,
+        resize,
+        is_save_edited_images,
+        image_name,
+        gif_speed,
     ):
         methods = image_latents.keys()
         inv_edits = {}
         for method, latent in image_latents.items():
-            inv_edits[method] = self.latent_editor.get_single_ganspace_edits_with_direction(latent, factors, direction)
-
-        for method in inv_edits:
-            method_saved_dir = os.path.join(self.edited_base_dir, method)
-            os.makedirs(method_saved_dir, exist_ok=True)
-
-            direction_saved_dir = os.path.join(method_saved_dir, direction)
-            if os.path.exists(direction_saved_dir):
-                shutil.rmtree(direction_saved_dir)
-            os.makedirs(direction_saved_dir)
-
-            if is_save_edited_images:
-                edited_image_save_dir = os.path.join(direction_saved_dir, "edited_images")
-                os.makedirs(edited_image_save_dir, exist_ok=True)
-
-            if self.args.save_edited_images:
-                quan_eval_editing_dir = os.path.join(self.eval_edited_base_dir, direction)
-                os.makedirs(quan_eval_editing_dir, exist_ok=True)
-                for factor in factors:
-                    os.makedirs(f"{quan_eval_editing_dir}/{factor}", exist_ok=True)
-                    for methods in methods:
-                        os.makedirs(f"{quan_eval_editing_dir}/{factor}/{method}", exist_ok=True)
-
-            edited_latents = inv_edits[method]
-            edited_images = []
-            for factor, edited_latent in zip(factors, edited_latents):
-                saved_image = get_image_from_latent(
-                    edited_latent, added_weights[method], self.experiment_creator.G, resize
-                )
-                edited_images.append(saved_image)
-
-                if is_save_edited_images:
-                    saved_image.save(os.path.join(edited_image_save_dir, f"{factor}.png"))
-                    saved_image.save(f"{quan_eval_editing_dir}/{factor}/{method}/{image_name}.png")
-
-            # Create gif animation
-            edited_images += edited_images[::-1]
-            edited_images[0].save(
-                os.path.join(direction_saved_dir, f"{method}.gif"),
-                save_all=True,
-                append_images=edited_images[1:],
-                optimize=False,
-                duration=int(1 / gif_speed * 100),
-                loop=0,
-            )
-
-    def save_styleclip_latent_mapper_edits(
-        self, image_latents, added_weights, factors, direction, resize, is_save_edited_images, image_name, gif_speed
-    ):
-        methods = image_latents.keys()
-        inv_edits = {}
-        for method, latent in image_latents.items():
-            inv_edits[method] = self.latent_editor.get_single_styleclip_latent_mapper_edits_with_direction(
+            inv_edits[
+                method
+            ] = self.latent_editor.get_single_ganspace_edits_with_direction(
                 latent, factors, direction
             )
 
@@ -178,28 +162,118 @@ class EditComparison:
             os.makedirs(direction_saved_dir)
 
             if is_save_edited_images:
-                edited_image_save_dir = os.path.join(direction_saved_dir, "edited_images")
+                edited_image_save_dir = os.path.join(
+                    direction_saved_dir, "edited_images"
+                )
                 os.makedirs(edited_image_save_dir, exist_ok=True)
 
             if self.args.save_edited_images:
-                quan_eval_editing_dir = os.path.join(self.eval_edited_base_dir, direction)
+                quan_eval_editing_dir = os.path.join(
+                    self.eval_edited_base_dir, direction
+                )
                 os.makedirs(quan_eval_editing_dir, exist_ok=True)
                 for factor in factors:
                     os.makedirs(f"{quan_eval_editing_dir}/{factor}", exist_ok=True)
                     for methods in methods:
-                        os.makedirs(f"{quan_eval_editing_dir}/{factor}/{method}", exist_ok=True)
+                        os.makedirs(
+                            f"{quan_eval_editing_dir}/{factor}/{method}", exist_ok=True
+                        )
 
             edited_latents = inv_edits[method]
             edited_images = []
             for factor, edited_latent in zip(factors, edited_latents):
                 saved_image = get_image_from_latent(
-                    edited_latent, added_weights[method], self.experiment_creator.G, resize
+                    edited_latent,
+                    added_weights[method],
+                    self.experiment_creator.G,
+                    resize,
                 )
                 edited_images.append(saved_image)
 
                 if is_save_edited_images:
-                    saved_image.save(os.path.join(edited_image_save_dir, f"{factor}.png"))
-                    saved_image.save(f"{quan_eval_editing_dir}/{factor}/{method}/{image_name}.png")
+                    saved_image.save(
+                        os.path.join(edited_image_save_dir, f"{factor}.png")
+                    )
+                    saved_image.save(
+                        f"{quan_eval_editing_dir}/{factor}/{method}/{image_name}.png"
+                    )
+
+            # Create gif animation
+            edited_images += edited_images[::-1]
+            edited_images[0].save(
+                os.path.join(direction_saved_dir, f"{method}.gif"),
+                save_all=True,
+                append_images=edited_images[1:],
+                optimize=False,
+                duration=int(1 / gif_speed * 100),
+                loop=0,
+            )
+
+    def save_styleclip_latent_mapper_edits(
+        self,
+        image_latents,
+        added_weights,
+        factors,
+        direction,
+        resize,
+        is_save_edited_images,
+        image_name,
+        gif_speed,
+    ):
+        methods = image_latents.keys()
+        inv_edits = {}
+        for method, latent in image_latents.items():
+            inv_edits[
+                method
+            ] = self.latent_editor.get_single_styleclip_latent_mapper_edits_with_direction(
+                latent, factors, direction
+            )
+
+        for method in inv_edits:
+            method_saved_dir = os.path.join(self.edited_base_dir, method)
+            os.makedirs(method_saved_dir, exist_ok=True)
+
+            direction_saved_dir = os.path.join(method_saved_dir, direction)
+            if os.path.exists(direction_saved_dir):
+                shutil.rmtree(direction_saved_dir)
+            os.makedirs(direction_saved_dir)
+
+            if is_save_edited_images:
+                edited_image_save_dir = os.path.join(
+                    direction_saved_dir, "edited_images"
+                )
+                os.makedirs(edited_image_save_dir, exist_ok=True)
+
+            if self.args.save_edited_images:
+                quan_eval_editing_dir = os.path.join(
+                    self.eval_edited_base_dir, direction
+                )
+                os.makedirs(quan_eval_editing_dir, exist_ok=True)
+                for factor in factors:
+                    os.makedirs(f"{quan_eval_editing_dir}/{factor}", exist_ok=True)
+                    for methods in methods:
+                        os.makedirs(
+                            f"{quan_eval_editing_dir}/{factor}/{method}", exist_ok=True
+                        )
+
+            edited_latents = inv_edits[method]
+            edited_images = []
+            for factor, edited_latent in zip(factors, edited_latents):
+                saved_image = get_image_from_latent(
+                    edited_latent,
+                    added_weights[method],
+                    self.experiment_creator.G,
+                    resize,
+                )
+                edited_images.append(saved_image)
+
+                if is_save_edited_images:
+                    saved_image.save(
+                        os.path.join(edited_image_save_dir, f"{factor}.png")
+                    )
+                    saved_image.save(
+                        f"{quan_eval_editing_dir}/{factor}/{method}/{image_name}.png"
+                    )
 
             # Create gif animation
             edited_images += edited_images[::-1]
@@ -215,20 +289,35 @@ class EditComparison:
     def run_experiment(self):
         images_counter = 0
         interfacegan_factors = [
-            val / 10.0 for val in range(self.args.min_factor, self.args.max_factor + self.args.step, self.args.step)
+            val / 10.0
+            for val in range(
+                self.args.min_factor,
+                self.args.max_factor + self.args.step,
+                self.args.step,
+            )
         ]
         ganspace_factors = [
-            val / 10.0 for val in range(self.args.min_factor, self.args.max_factor + self.args.step, self.args.step)
+            val / 10.0
+            for val in range(
+                self.args.min_factor,
+                self.args.max_factor + self.args.step,
+                self.args.step,
+            )
         ]
         styleclip_mapper_factors = [
-            val / 100.0 for val in range(self.args.min_factor, self.args.max_factor + self.args.step, self.args.step)
+            val / 100.0
+            for val in range(
+                self.args.min_factor,
+                self.args.max_factor + self.args.step,
+                self.args.step,
+            )
         ]
         self.experiment_creator.run_experiment()
 
         for idx, image_path in tqdm(
-            enumerate(self.experiment_creator.images_paths), total=len(self.experiment_creator.images_paths)
+            enumerate(self.experiment_creator.images_paths),
+            total=len(self.experiment_creator.images_paths),
         ):
-
             if images_counter >= self.args.max_num_images:
                 break
 
@@ -236,14 +325,19 @@ class EditComparison:
             target_image = Image.open(self.experiment_creator.target_paths[idx])
 
             # Get latents
-            image_latents, added_weights = self.get_image_latent_codes(image_name, self.args.methods)
+            image_latents, added_weights = self.get_image_latent_codes(
+                image_name, self.args.methods
+            )
             self.create_output_dirs(image_name)
 
             # Run image manipulation
             if self.args.domain == "human_faces":
                 for direction in self.args.directions:
-                    if direction in ["age", "smile", "rotation"]:  # INTERFACEGAN directions
-
+                    if direction in [
+                        "age",
+                        "smile",
+                        "rotation",
+                    ]:  # INTERFACEGAN directions
                         self.save_interfacegan_edits(
                             image_latents,
                             added_weights,
@@ -271,7 +365,6 @@ class EditComparison:
                         "trump",
                         "zuckerberg",
                     ]:  # STYLECLIP directions from latent mappers
-
                         self.save_styleclip_latent_mapper_edits(
                             image_latents,
                             added_weights,
@@ -293,7 +386,6 @@ class EditComparison:
                         "head_angle_up",
                         "displeased",
                     ]:  # GANSPACE directions
-
                         self.save_ganspace_edits(
                             image_latents,
                             added_weights,
@@ -309,7 +401,12 @@ class EditComparison:
 
             elif self.args.domain == "churches":
                 for direction in self.args.directions:
-                    if direction in ["clouds", "vibrant", "blue_skies", "trees"]:  # GANSPACE directions
+                    if direction in [
+                        "clouds",
+                        "vibrant",
+                        "blue_skies",
+                        "trees",
+                    ]:  # GANSPACE directions
                         self.save_ganspace_edits(
                             image_latents,
                             added_weights,

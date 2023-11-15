@@ -27,7 +27,9 @@ google_drive_paths = {
 
 
 def ensure_checkpoint_exists(model_weights_filename):
-    if not os.path.isfile(model_weights_filename) and (model_weights_filename in google_drive_paths):
+    if not os.path.isfile(model_weights_filename) and (
+        model_weights_filename in google_drive_paths
+    ):
         gdrive_url = google_drive_paths[model_weights_filename]
         try:
             from gdown import download as drive_download
@@ -35,8 +37,15 @@ def ensure_checkpoint_exists(model_weights_filename):
             drive_download(gdrive_url, model_weights_filename, quiet=False)
         except ModuleNotFoundError:
             print(
-                "gdown module not found.", "pip3 install gdown or, manually download the checkpoint file:", gdrive_url
+                "gdown module not found.",
+                "pip3 install gdown or, manually download the checkpoint file:",
+                gdrive_url,
             )
 
-    if not os.path.isfile(model_weights_filename) and (model_weights_filename not in google_drive_paths):
-        print(model_weights_filename, " not found, you may need to manually download the model weights.")
+    if not os.path.isfile(model_weights_filename) and (
+        model_weights_filename not in google_drive_paths
+    ):
+        print(
+            model_weights_filename,
+            " not found, you may need to manually download the model weights.",
+        )

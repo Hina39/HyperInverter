@@ -11,7 +11,9 @@ def shape_to_num_params(shapes):
 class WeightRegressor(nn.Module):
     """Regressing features to convolution weight kernel"""
 
-    def __init__(self, input_dim, hidden_dim, kernel_size=3, out_channels=16, in_channels=16):
+    def __init__(
+        self, input_dim, hidden_dim, kernel_size=3, out_channels=16, in_channels=16
+    ):
         super().__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
@@ -21,26 +23,48 @@ class WeightRegressor(nn.Module):
 
         # Feature Transformer
         self.fusion = nn.Sequential(
-            nn.Conv2d(2 * self.input_dim, self.input_dim, kernel_size=1, padding=0, stride=1, bias=True),
+            nn.Conv2d(
+                2 * self.input_dim,
+                self.input_dim,
+                kernel_size=1,
+                padding=0,
+                stride=1,
+                bias=True,
+            ),
             nn.InstanceNorm2d(self.input_dim),
             nn.ReLU(),
         )
         self.feature_extractor = nn.Sequential(
-            nn.Conv2d(self.input_dim, 64, kernel_size=3, padding=1, stride=1, bias=True),
+            nn.Conv2d(
+                self.input_dim, 64, kernel_size=3, padding=1, stride=1, bias=True
+            ),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1, bias=True),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1, bias=True),
             nn.ReLU(),
-            nn.Conv2d(64, self.hidden_dim, kernel_size=4, stride=2, padding=1, bias=True),
+            nn.Conv2d(
+                64, self.hidden_dim, kernel_size=4, stride=2, padding=1, bias=True
+            ),
             nn.ReLU(),
         )
 
         # Linear Mapper
-        self.w1 = nn.Parameter(torch.randn((self.hidden_dim, self.in_channels * self.hidden_dim)))
+        self.w1 = nn.Parameter(
+            torch.randn((self.hidden_dim, self.in_channels * self.hidden_dim))
+        )
         self.b1 = nn.Parameter(torch.randn((self.in_channels * self.hidden_dim)))
-        self.w2 = nn.Parameter(torch.randn((self.hidden_dim, self.out_channels * self.kernel_size * self.kernel_size)))
-        self.b2 = nn.Parameter(torch.randn((self.out_channels * self.kernel_size * self.kernel_size)))
+        self.w2 = nn.Parameter(
+            torch.randn(
+                (
+                    self.hidden_dim,
+                    self.out_channels * self.kernel_size * self.kernel_size,
+                )
+            )
+        )
+        self.b2 = nn.Parameter(
+            torch.randn((self.out_channels * self.kernel_size * self.kernel_size))
+        )
 
         self.weight_init()
 
@@ -62,7 +86,9 @@ class WeightRegressor(nn.Module):
         out = torch.matmul(out, self.w1) + self.b1
         out = out.view(bs, self.in_channels, self.hidden_dim)
         out = torch.matmul(out, self.w2) + self.b2
-        kernel = out.view(bs, self.out_channels, self.in_channels, self.kernel_size, self.kernel_size)
+        kernel = out.view(
+            bs, self.out_channels, self.in_channels, self.kernel_size, self.kernel_size
+        )
 
         return kernel
 
@@ -108,6 +134,8 @@ class Hypernetwork(nn.Module):
             weights = self.weight_regressors[layer_name](
                 w_image_codes[:, w_idx, :, :, :], w_bar_codes[:, w_idx, :, :, :]
             )
-            out_weights[ori_layer_name] = weights.view(bs, *list(self.target_shape[ori_layer_name]["shape"]))
+            out_weights[ori_layer_name] = weights.view(
+                bs, *list(self.target_shape[ori_layer_name]["shape"])
+            )
 
         return out_weights

@@ -55,7 +55,11 @@ class _FusedMultiplyAdd(torch.autograd.Function):  # a * b + c
 def _unbroadcast(x, shape):
     extra_dims = x.ndim - len(shape)
     assert extra_dims >= 0
-    dim = [i for i in range(x.ndim) if x.shape[i] > 1 and (i < extra_dims or shape[i - extra_dims] == 1)]
+    dim = [
+        i
+        for i in range(x.ndim)
+        if x.shape[i] > 1 and (i < extra_dims or shape[i - extra_dims] == 1)
+    ]
     if len(dim):
         x = x.sum(dim=dim, keepdim=True)
     if extra_dims:

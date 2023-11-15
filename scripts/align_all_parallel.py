@@ -98,7 +98,10 @@ def align_face(filepath, predictor):
     # Shrink.
     shrink = int(np.floor(qsize / output_size * 0.5))
     if shrink > 1:
-        rsize = (int(np.rint(float(img.size[0]) / shrink)), int(np.rint(float(img.size[1]) / shrink)))
+        rsize = (
+            int(np.rint(float(img.size[0]) / shrink)),
+            int(np.rint(float(img.size[1]) / shrink)),
+        )
         img = img.resize(rsize, PIL.Image.ANTIALIAS)
         quad /= shrink
         qsize /= shrink
@@ -136,7 +139,9 @@ def align_face(filepath, predictor):
     )
     if enable_padding and max(pad) > border - 4:
         pad = np.maximum(pad, int(np.rint(qsize * 0.3)))
-        img = np.pad(np.float32(img), ((pad[1], pad[3]), (pad[0], pad[2]), (0, 0)), "reflect")
+        img = np.pad(
+            np.float32(img), ((pad[1], pad[3]), (pad[0], pad[2]), (0, 0)), "reflect"
+        )
         h, w, _ = img.shape
         y, x, _ = np.ogrid[:h, :w, :1]
         mask = np.maximum(
@@ -144,13 +149,20 @@ def align_face(filepath, predictor):
             1.0 - np.minimum(np.float32(y) / pad[1], np.float32(h - 1 - y) / pad[3]),
         )
         blur = qsize * 0.02
-        img += (scipy.ndimage.gaussian_filter(img, [blur, blur, 0]) - img) * np.clip(mask * 3.0 + 1.0, 0.0, 1.0)
+        img += (scipy.ndimage.gaussian_filter(img, [blur, blur, 0]) - img) * np.clip(
+            mask * 3.0 + 1.0, 0.0, 1.0
+        )
         img += (np.median(img, axis=(0, 1)) - img) * np.clip(mask, 0.0, 1.0)
         img = PIL.Image.fromarray(np.uint8(np.clip(np.rint(img), 0, 255)), "RGB")
         quad += pad[:2]
 
     # Transform.
-    img = img.transform((transform_size, transform_size), PIL.Image.QUAD, (quad + 0.5).flatten(), PIL.Image.BILINEAR)
+    img = img.transform(
+        (transform_size, transform_size),
+        PIL.Image.QUAD,
+        (quad + 0.5).flatten(),
+        PIL.Image.BILINEAR,
+    )
     if output_size < transform_size:
         img = img.resize((output_size, output_size), PIL.Image.ANTIALIAS)
 
@@ -209,7 +221,9 @@ def run(args):
                 continue
             file_paths.append((file_path, res_path))
 
-    file_chunks = list(chunks(file_paths, int(math.ceil(len(file_paths) / args.num_threads))))
+    file_chunks = list(
+        chunks(file_paths, int(math.ceil(len(file_paths) / args.num_threads)))
+    )
     print(len(file_chunks))
     pool = mp.Pool(args.num_threads)
     print("Running on {} paths\nHere we goooo".format(len(file_paths)))

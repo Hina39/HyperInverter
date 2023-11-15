@@ -85,7 +85,9 @@ def get_plugin(module_name, sources, **build_kwargs):
         # actually cares about this.)
         source_dirs_set = set(os.path.dirname(source) for source in sources)
         if len(source_dirs_set) == 1 and ("TORCH_EXTENSIONS_DIR" in os.environ):
-            all_source_files = sorted(list(x for x in Path(list(source_dirs_set)[0]).iterdir() if x.is_file()))
+            all_source_files = sorted(
+                list(x for x in Path(list(source_dirs_set)[0]).iterdir() if x.is_file())
+            )
 
             # Compute a combined hash digest for all source files in the same
             # custom op directory (usually .cu, .cpp, .py and .h files).
@@ -104,14 +106,19 @@ def get_plugin(module_name, sources, **build_kwargs):
                 if baton.try_acquire():
                     try:
                         for src in all_source_files:
-                            shutil.copyfile(src, os.path.join(digest_build_dir, os.path.basename(src)))
+                            shutil.copyfile(
+                                src,
+                                os.path.join(digest_build_dir, os.path.basename(src)),
+                            )
                     finally:
                         baton.release()
                 else:
                     # Someone else is copying source files under the digest dir,
                     # wait until done and continue.
                     baton.wait()
-            digest_sources = [os.path.join(digest_build_dir, os.path.basename(x)) for x in sources]
+            digest_sources = [
+                os.path.join(digest_build_dir, os.path.basename(x)) for x in sources
+            ]
             torch.utils.cpp_extension.load(
                 name=module_name,
                 build_directory=build_dir,
@@ -120,7 +127,9 @@ def get_plugin(module_name, sources, **build_kwargs):
                 **build_kwargs,
             )
         else:
-            torch.utils.cpp_extension.load(name=module_name, verbose=verbose_build, sources=sources, **build_kwargs)
+            torch.utils.cpp_extension.load(
+                name=module_name, verbose=verbose_build, sources=sources, **build_kwargs
+            )
         module = importlib.import_module(module_name)
 
     except Exception:

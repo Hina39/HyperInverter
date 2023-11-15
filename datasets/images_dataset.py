@@ -4,7 +4,14 @@ from utils import data_utils
 
 
 class ImagesDataset(Dataset):
-    def __init__(self, source_root, target_root, opts, target_transform=None, source_transform=None):
+    def __init__(
+        self,
+        source_root,
+        target_root,
+        opts,
+        target_transform=None,
+        source_transform=None,
+    ):
         self.source_paths = sorted(data_utils.make_dataset(source_root))
         self.target_paths = sorted(data_utils.make_dataset(target_root))
         self.source_transform = source_transform

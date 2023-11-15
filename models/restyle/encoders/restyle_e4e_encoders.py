@@ -47,11 +47,19 @@ class ProgressiveBackboneEncoder(Module):
         elif mode == "ir_se":
             unit_module = bottleneck_IR_SE
 
-        self.input_layer = Sequential(Conv2d(opts.input_nc, 64, (3, 3), 1, 1, bias=False), BatchNorm2d(64), PReLU(64))
+        self.input_layer = Sequential(
+            Conv2d(opts.input_nc, 64, (3, 3), 1, 1, bias=False),
+            BatchNorm2d(64),
+            PReLU(64),
+        )
         modules = []
         for block in blocks:
             for bottleneck in block:
-                modules.append(unit_module(bottleneck.in_channel, bottleneck.depth, bottleneck.stride))
+                modules.append(
+                    unit_module(
+                        bottleneck.in_channel, bottleneck.depth, bottleneck.stride
+                    )
+                )
         self.body = Sequential(*modules)
 
         self.styles = nn.ModuleList()
@@ -96,12 +104,19 @@ class ResNetProgressiveBackboneEncoder(Module):
     def __init__(self, n_styles=18, opts=None):
         super(ResNetProgressiveBackboneEncoder, self).__init__()
 
-        self.conv1 = nn.Conv2d(opts.input_nc, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.conv1 = nn.Conv2d(
+            opts.input_nc, 64, kernel_size=7, stride=2, padding=3, bias=False
+        )
         self.bn1 = BatchNorm2d(64)
         self.relu = PReLU(64)
 
         resnet_basenet = resnet34(pretrained=True)
-        blocks = [resnet_basenet.layer1, resnet_basenet.layer2, resnet_basenet.layer3, resnet_basenet.layer4]
+        blocks = [
+            resnet_basenet.layer1,
+            resnet_basenet.layer2,
+            resnet_basenet.layer3,
+            resnet_basenet.layer4,
+        ]
         modules = []
         for block in blocks:
             for bottleneck in block:

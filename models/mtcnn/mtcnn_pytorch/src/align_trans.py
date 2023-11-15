@@ -5,7 +5,9 @@ Created on Mon Apr 24 15:43:29 2017
 """
 import cv2
 import numpy as np
-from models.mtcnn.mtcnn_pytorch.src.matlab_cp2tform import get_similarity_transform_for_cv2
+from models.mtcnn.mtcnn_pytorch.src.matlab_cp2tform import (
+    get_similarity_transform_for_cv2,
+)
 
 
 # from scipy.linalg import lstsq
@@ -30,7 +32,10 @@ class FaceWarpException(Exception):
 
 
 def get_reference_facial_points(
-    output_size=None, inner_padding_factor=0.0, outer_padding=(0, 0), default_square=False
+    output_size=None,
+    inner_padding_factor=0.0,
+    outer_padding=(0, 0),
+    default_square=False,
 ):
     """
     Function:
@@ -87,7 +92,11 @@ def get_reference_facial_points(
     # print('              crop_size = ', tmp_crop_size)
     # print('              reference_5pts = ', tmp_5pts)
 
-    if output_size and output_size[0] == tmp_crop_size[0] and output_size[1] == tmp_crop_size[1]:
+    if (
+        output_size
+        and output_size[0] == tmp_crop_size[0]
+        and output_size[1] == tmp_crop_size[1]
+    ):
         # print('output_size == DEFAULT_CROP_SIZE {}: return default reference points'.format(tmp_crop_size))
         return tmp_5pts
 
@@ -96,19 +105,28 @@ def get_reference_facial_points(
             # print('No paddings to do: return default reference points')
             return tmp_5pts
         else:
-            raise FaceWarpException("No paddings to do, output_size must be None or {}".format(tmp_crop_size))
+            raise FaceWarpException(
+                "No paddings to do, output_size must be None or {}".format(
+                    tmp_crop_size
+                )
+            )
 
     # check output size
     if not (0 <= inner_padding_factor <= 1.0):
         raise FaceWarpException("Not (0 <= inner_padding_factor <= 1.0)")
 
-    if (inner_padding_factor > 0 or outer_padding[0] > 0 or outer_padding[1] > 0) and output_size is None:
+    if (
+        inner_padding_factor > 0 or outer_padding[0] > 0 or outer_padding[1] > 0
+    ) and output_size is None:
         output_size = tmp_crop_size * (1 + inner_padding_factor * 2).astype(np.int32)
         output_size += np.array(outer_padding)
         # print('              deduced from paddings, output_size = ', output_size)
 
     if not (outer_padding[0] < output_size[0] and outer_padding[1] < output_size[1]):
-        raise FaceWarpException("Not (outer_padding[0] < output_size[0]" "and outer_padding[1] < output_size[1])")
+        raise FaceWarpException(
+            "Not (outer_padding[0] < output_size[0]"
+            "and outer_padding[1] < output_size[1])"
+        )
 
     # 1) pad the inner region according inner_padding_factor
     # print('---> STEP1: pad the inner region according inner_padding_factor')
@@ -126,9 +144,13 @@ def get_reference_facial_points(
     # print('              crop_size = ', tmp_crop_size)
     # print('              size_bf_outer_pad = ', size_bf_outer_pad)
 
-    if size_bf_outer_pad[0] * tmp_crop_size[1] != size_bf_outer_pad[1] * tmp_crop_size[0]:
+    if (
+        size_bf_outer_pad[0] * tmp_crop_size[1]
+        != size_bf_outer_pad[1] * tmp_crop_size[0]
+    ):
         raise FaceWarpException(
-            "Must have (output_size - outer_padding)" "= some_scale * (crop_size * (1.0 + inner_padding_factor)"
+            "Must have (output_size - outer_padding)"
+            "= some_scale * (crop_size * (1.0 + inner_padding_factor)"
         )
 
     scale_factor = size_bf_outer_pad[0].astype(np.float32) / tmp_crop_size[0]
@@ -193,7 +215,9 @@ def get_affine_transform_matrix(src_pts, dst_pts):
     return tfm
 
 
-def warp_and_crop_face(src_img, facial_pts, reference_pts=None, crop_size=(96, 112), align_type="smilarity"):
+def warp_and_crop_face(
+    src_img, facial_pts, reference_pts=None, crop_size=(96, 112), align_type="smilarity"
+):
     """
     Function:
     ----------

@@ -1,7 +1,7 @@
 dataset_paths = {
     #  Human Face (FFHQ - train , CelebA-HQ - test)
     "ffhq": "/home/challenger/hyperinverter/data/69000-20231115T153103Z-001/69000",
-    #今ないので、とりあえず、ffhqを使う
+    # 今ないので、とりあえず、ffhqを使う
     "celeba_test": "/home/challenger/hyperinverter/data/drive-download-20231115T154027Z-002",
     # Churches (LSUN Churches)
     "church_train": "",

@@ -31,7 +31,11 @@ def _init():
         sources = ["upfirdn2d.cpp", "upfirdn2d.cu"]
         sources = [os.path.join(os.path.dirname(__file__), s) for s in sources]
         try:
-            _plugin = custom_ops.get_plugin("upfirdn2d_plugin", sources=sources, extra_cuda_cflags=["--use_fast_math"])
+            _plugin = custom_ops.get_plugin(
+                "upfirdn2d_plugin",
+                sources=sources,
+                extra_cuda_cflags=["--use_fast_math"],
+            )
         except Exception:
             warnings.warn(
                 "Failed to build CUDA kernels for upfirdn2d. Falling back to slow reference implementation. Details:\n\n"
@@ -79,7 +83,14 @@ def _get_filter_size(f):
 # ----------------------------------------------------------------------------
 
 
-def setup_filter(f, device=torch.device("cpu"), normalize=True, flip_filter=False, gain=1, separable=None):
+def setup_filter(
+    f,
+    device=torch.device("cpu"),
+    normalize=True,
+    flip_filter=False,
+    gain=1,
+    separable=None,
+):
     r"""Convenience function to setup 2D FIR filter for `upfirdn2d()`.
 
     Args:
@@ -172,8 +183,12 @@ def upfirdn2d(x, f, up=1, down=1, padding=0, flip_filter=False, gain=1, impl="cu
     assert isinstance(x, torch.Tensor)
     assert impl in ["ref", "cuda"]
     if impl == "cuda" and x.device.type == "cuda" and _init():
-        return _upfirdn2d_cuda(up=up, down=down, padding=padding, flip_filter=flip_filter, gain=gain).apply(x, f)
-    return _upfirdn2d_ref(x, f, up=up, down=down, padding=padding, flip_filter=flip_filter, gain=gain)
+        return _upfirdn2d_cuda(
+            up=up, down=down, padding=padding, flip_filter=flip_filter, gain=gain
+        ).apply(x, f)
+    return _upfirdn2d_ref(
+        x, f, up=up, down=down, padding=padding, flip_filter=flip_filter, gain=gain
+    )
 
 
 # ----------------------------------------------------------------------------
@@ -199,8 +214,15 @@ def _upfirdn2d_ref(x, f, up=1, down=1, padding=0, flip_filter=False, gain=1):
     x = x.reshape([batch_size, num_channels, in_height * upy, in_width * upx])
 
     # Pad or crop.
-    x = torch.nn.functional.pad(x, [max(padx0, 0), max(padx1, 0), max(pady0, 0), max(pady1, 0)])
-    x = x[:, :, max(-pady0, 0) : x.shape[2] - max(-pady1, 0), max(-padx0, 0) : x.shape[3] - max(-padx1, 0)]
+    x = torch.nn.functional.pad(
+        x, [max(padx0, 0), max(padx1, 0), max(pady0, 0), max(pady1, 0)]
+    )
+    x = x[
+        :,
+        :,
+        max(-pady0, 0) : x.shape[2] - max(-pady1, 0),
+        max(-padx0, 0) : x.shape[3] - max(-padx1, 0),
+    ]
 
     # Setup filter.
     f = f * (gain ** (f.ndim / 2))
@@ -248,13 +270,48 @@ def _upfirdn2d_cuda(up=1, down=1, padding=0, flip_filter=False, gain=1):
             assert isinstance(f, torch.Tensor) and f.ndim in [1, 2]
             y = x
             if f.ndim == 2:
-                y = _plugin.upfirdn2d(y, f, upx, upy, downx, downy, padx0, padx1, pady0, pady1, flip_filter, gain)
+                y = _plugin.upfirdn2d(
+                    y,
+                    f,
+                    upx,
+                    upy,
+                    downx,
+                    downy,
+                    padx0,
+                    padx1,
+                    pady0,
+                    pady1,
+                    flip_filter,
+                    gain,
+                )
             else:
                 y = _plugin.upfirdn2d(
-                    y, f.unsqueeze(0), upx, 1, downx, 1, padx0, padx1, 0, 0, flip_filter, np.sqrt(gain)
+                    y,
+                    f.unsqueeze(0),
+                    upx,
+                    1,
+                    downx,
+                    1,
+                    padx0,
+                    padx1,
+                    0,
+                    0,
+                    flip_filter,
+                    np.sqrt(gain),
                 )
                 y = _plugin.upfirdn2d(
-                    y, f.unsqueeze(1), 1, upy, 1, downy, 0, 0, pady0, pady1, flip_filter, np.sqrt(gain)
+                    y,
+                    f.unsqueeze(1),
+                    1,
+                    upy,
+                    1,
+                    downy,
+                    0,
+                    0,
+                    pady0,
+                    pady1,
+                    flip_filter,
+                    np.sqrt(gain),
                 )
             ctx.save_for_backward(f)
             ctx.x_shape = x.shape
@@ -276,9 +333,13 @@ def _upfirdn2d_cuda(up=1, down=1, padding=0, flip_filter=False, gain=1):
             df = None
 
             if ctx.needs_input_grad[0]:
-                dx = _upfirdn2d_cuda(up=down, down=up, padding=p, flip_filter=(not flip_filter), gain=gain).apply(
-                    dy, f
-                )
+                dx = _upfirdn2d_cuda(
+                    up=down,
+                    down=up,
+                    padding=p,
+                    flip_filter=(not flip_filter),
+                    gain=gain,
+                ).apply(dy, f)
 
             assert not ctx.needs_input_grad[1]
             return dx, df
@@ -364,7 +425,15 @@ def upsample2d(x, f, up=2, padding=0, flip_filter=False, gain=1, impl="cuda"):
         pady0 + (fh + upy - 1) // 2,
         pady1 + (fh - upy) // 2,
     ]
-    return upfirdn2d(x, f, up=up, padding=p, flip_filter=flip_filter, gain=gain * upx * upy, impl=impl)
+    return upfirdn2d(
+        x,
+        f,
+        up=up,
+        padding=p,
+        flip_filter=flip_filter,
+        gain=gain * upx * upy,
+        impl=impl,
+    )
 
 
 # ----------------------------------------------------------------------------
@@ -405,7 +474,9 @@ def downsample2d(x, f, down=2, padding=0, flip_filter=False, gain=1, impl="cuda"
         pady0 + (fh - downy + 1) // 2,
         pady1 + (fh - downy) // 2,
     ]
-    return upfirdn2d(x, f, down=down, padding=p, flip_filter=flip_filter, gain=gain, impl=impl)
+    return upfirdn2d(
+        x, f, down=down, padding=p, flip_filter=flip_filter, gain=gain, impl=impl
+    )
 
 
 # ----------------------------------------------------------------------------

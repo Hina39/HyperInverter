@@ -41,13 +41,19 @@ class pSp(nn.Module):
 
     def set_encoder(self):
         if self.opts.encoder_type == "GradualStyleEncoder":
-            encoder = fpn_encoders.GradualStyleEncoder(50, "ir_se", self.n_styles, self.opts)
+            encoder = fpn_encoders.GradualStyleEncoder(
+                50, "ir_se", self.n_styles, self.opts
+            )
         elif self.opts.encoder_type == "ResNetGradualStyleEncoder":
             encoder = fpn_encoders.ResNetGradualStyleEncoder(self.n_styles, self.opts)
         elif self.opts.encoder_type == "BackboneEncoder":
-            encoder = restyle_psp_encoders.BackboneEncoder(50, "ir_se", self.n_styles, self.opts)
+            encoder = restyle_psp_encoders.BackboneEncoder(
+                50, "ir_se", self.n_styles, self.opts
+            )
         elif self.opts.encoder_type == "ResNetBackboneEncoder":
-            encoder = restyle_psp_encoders.ResNetBackboneEncoder(self.n_styles, self.opts)
+            encoder = restyle_psp_encoders.ResNetBackboneEncoder(
+                self.n_styles, self.opts
+            )
         else:
             raise Exception(f"{self.opts.encoder_type} is not a valid encoders")
         return encoder
@@ -62,7 +68,9 @@ class pSp(nn.Module):
         else:
             encoder_ckpt = self.__get_encoder_checkpoint()
             self.encoder.load_state_dict(encoder_ckpt, strict=False)
-            print(f"Loading decoder weights from pretrained path: {self.opts.stylegan_weights}")
+            print(
+                f"Loading decoder weights from pretrained path: {self.opts.stylegan_weights}"
+            )
             ckpt = torch.load(self.opts.stylegan_weights)
             self.decoder.load_state_dict(ckpt["g_ema"], strict=True)
             self.__load_latent_avg(ckpt, repeat=self.n_styles)
@@ -97,7 +105,9 @@ class pSp(nn.Module):
             for i in latent_mask:
                 if inject_latent is not None:
                     if alpha is not None:
-                        codes[:, i] = alpha * inject_latent[:, i] + (1 - alpha) * codes[:, i]
+                        codes[:, i] = (
+                            alpha * inject_latent[:, i] + (1 - alpha) * codes[:, i]
+                        )
                     else:
                         codes[:, i] = inject_latent[:, i]
                 else:
@@ -109,7 +119,10 @@ class pSp(nn.Module):
             input_is_latent = (not input_code) or (input_is_full)
 
         images, result_latent = self.decoder(
-            [codes], input_is_latent=input_is_latent, randomize_noise=randomize_noise, return_latents=return_latents
+            [codes],
+            input_is_latent=input_is_latent,
+            randomize_noise=randomize_noise,
+            return_latents=return_latents,
         )
 
         if resize:
@@ -139,7 +152,11 @@ class pSp(nn.Module):
             if self.opts.input_nc != 3:
                 shape = encoder_ckpt["input_layer.0.weight"].shape
                 altered_input_layer = torch.randn(
-                    shape[0], self.opts.input_nc, shape[2], shape[3], dtype=torch.float32
+                    shape[0],
+                    self.opts.input_nc,
+                    shape[2],
+                    shape[3],
+                    dtype=torch.float32,
                 )
                 altered_input_layer[:, :3, :, :] = encoder_ckpt["input_layer.0.weight"]
                 encoder_ckpt["input_layer.0.weight"] = altered_input_layer
@@ -151,7 +168,11 @@ class pSp(nn.Module):
             if self.opts.input_nc != 3:
                 shape = encoder_ckpt["conv1.weight"].shape
                 altered_input_layer = torch.randn(
-                    shape[0], self.opts.input_nc, shape[2], shape[3], dtype=torch.float32
+                    shape[0],
+                    self.opts.input_nc,
+                    shape[2],
+                    shape[3],
+                    dtype=torch.float32,
                 )
                 altered_input_layer[:, :3, :, :] = encoder_ckpt["conv1.weight"]
                 encoder_ckpt["conv1.weight"] = altered_input_layer

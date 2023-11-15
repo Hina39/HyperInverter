@@ -36,7 +36,9 @@ class BaseLatentCreator:
         return None
 
     def create_latents(self, args):
-        image_dataset = InferenceDataset(f"{args.input_data_dir}", self.projection_preprocess)
+        image_dataset = InferenceDataset(
+            f"{args.input_data_dir}", self.projection_preprocess
+        )
         self.image_dataloader = DataLoader(image_dataset, batch_size=1, shuffle=False)
 
         base_latent_folder_path = f"{args.saved_embedding_dir}/{args.input_data_id}"

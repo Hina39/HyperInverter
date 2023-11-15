@@ -26,10 +26,16 @@ _num_moments = 3  # [num_scalars, sum_of_scalars, sum_of_squares]
 _reduce_dtype = torch.float32  # Data type to use for initial per-tensor reduction.
 _counter_dtype = torch.float64  # Data type to use for the internal counters.
 _rank = 0  # Rank of the current process.
-_sync_device = None  # Device to use for multiprocess communication. None = single-process.
+_sync_device = (
+    None  # Device to use for multiprocess communication. None = single-process.
+)
 _sync_called = False  # Has _sync() been called yet?
-_counters = dict()  # Running counters on each device, updated by report(): name => device => torch.Tensor
-_cumulative = dict()  # Cumulative counters on the CPU, updated by _sync(): name => torch.Tensor
+_counters = (
+    dict()
+)  # Running counters on each device, updated by report(): name => device => torch.Tensor
+_cumulative = (
+    dict()
+)  # Cumulative counters on the CPU, updated by _sync(): name => torch.Tensor
 
 # ----------------------------------------------------------------------------
 
@@ -173,7 +179,9 @@ class Collector:
             self._moments.clear()
         for name, cumulative in _sync(self.names()):
             if name not in self._cumulative:
-                self._cumulative[name] = torch.zeros([_num_moments], dtype=_counter_dtype)
+                self._cumulative[name] = torch.zeros(
+                    [_num_moments], dtype=_counter_dtype
+                )
             delta = cumulative - self._cumulative[name]
             self._cumulative[name].copy_(cumulative)
             if float(delta[0]) != 0:
@@ -232,7 +240,9 @@ class Collector:
         """
         stats = dnnlib.EasyDict()
         for name in self.names():
-            stats[name] = dnnlib.EasyDict(num=self.num(name), mean=self.mean(name), std=self.std(name))
+            stats[name] = dnnlib.EasyDict(
+                num=self.num(name), mean=self.mean(name), std=self.std(name)
+            )
         return stats
 
     def __getitem__(self, name):

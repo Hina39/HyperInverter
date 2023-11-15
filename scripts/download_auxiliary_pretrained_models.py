@@ -25,14 +25,17 @@ for model_weights_filename in google_drive_paths:
             drive_download(gdrive_url, model_weights_filename, quiet=False)
         except ModuleNotFoundError:
             print(
-                "gdown module not found.", "pip install gdown or, manually download the checkpoint file:", gdrive_url
+                "gdown module not found.",
+                "pip install gdown or, manually download the checkpoint file:",
+                gdrive_url,
             )
 
     if not os.path.isfile(model_weights_filename):
-        print(model_weights_filename, " not found, you may need to manually download the model weights.")
-        
-    if model_weights_filename == f"{base_dir}/mtcnn.zip":
-        with zipfile.ZipFile(model_weights_filename, 'r') as zip_ref:
-            zip_ref.extractall(base_dir)
-        
+        print(
+            model_weights_filename,
+            " not found, you may need to manually download the model weights.",
+        )
 
+    if model_weights_filename == f"{base_dir}/mtcnn.zip":
+        with zipfile.ZipFile(model_weights_filename, "r") as zip_ref:
+            zip_ref.extractall(base_dir)

@@ -28,10 +28,9 @@ def get_target_shapes(opts):
     elif opts.target_shape_name == "conv_without_bias_without_torgb":
         general_shape = STYLEGAN2_ADA_CONV_WEIGHT_WITHOUT_BIAS_WITHOUT_TO_RGB_SHAPES
 
-     # Add a check to ensure general_shape is not None
+    # Add a check to ensure general_shape is not None
     if general_shape is None:
         raise ValueError(f"Invalid target_shape_name: {opts.target_shape_name}")
-
 
     target_shape = {}
     for layer_name in general_shape:
@@ -70,9 +69,15 @@ class HyperInverter(nn.Module):
         # Load W-Encoder (E1 Encoder in Paper)
         if self.opts.w_encoder_path is not None:
             w_encoder_path = self.opts.w_encoder_path
-        elif self.opts.dataset_type == "ffhq_encode" and model_paths["w_encoder_ffhq"] is not None:
+        elif (
+            self.opts.dataset_type == "ffhq_encode"
+            and model_paths["w_encoder_ffhq"] is not None
+        ):
             w_encoder_path = model_paths["w_encoder_ffhq"]
-        elif self.opts.dataset_type == "church_encode" and model_paths["w_encoder_church"] is not None:
+        elif (
+            self.opts.dataset_type == "church_encode"
+            and model_paths["w_encoder_church"] is not None
+        ):
             w_encoder_path = model_paths["w_encoder_church"]
         else:
             raise Exception("Please specify the path to the pretrained W encoder.")
@@ -86,7 +91,9 @@ class HyperInverter(nn.Module):
 
         if "ffhq" in self.opts.dataset_type or "celeb" in self.opts.dataset_type:
             # Using ResNet-IRSE50 for facial domain
-            self.w_encoder = fpn_encoders.BackboneEncoderUsingLastLayerIntoW(50, "ir_se", opts)
+            self.w_encoder = fpn_encoders.BackboneEncoderUsingLastLayerIntoW(
+                50, "ir_se", opts
+            )
         else:
             # Using ResNet34 pre-trained on ImageNet for other domains
             self.w_encoder = fpn_encoders.ResNetEncoderUsingLastLayerIntoW()
@@ -115,10 +122,11 @@ class HyperInverter(nn.Module):
                 D_original = ckpt["D"]
                 D_original = D_original.float()
 
-         # Add a check to ensure D_original is not None
+        # Add a check to ensure D_original is not None
         if D_original is None:
-            raise ValueError("D_original is not defined. Check if self.opts.hyper_adv_lambda > 0")
-
+            raise ValueError(
+                "D_original is not defined. Check if self.opts.hyper_adv_lambda > 0"
+            )
 
         decoder = Generator(**G_original.init_kwargs)
         decoder.load_state_dict(G_original.state_dict())
@@ -147,18 +155,28 @@ class HyperInverter(nn.Module):
             ckpt = torch.load(self.opts.checkpoint_path, map_location="cpu")
 
             # Load w bar encoder
-            self.w_bar_encoder.load_state_dict(common.get_keys(ckpt, "w_bar_encoder"), strict=True)
+            self.w_bar_encoder.load_state_dict(
+                common.get_keys(ckpt, "w_bar_encoder"), strict=True
+            )
             self.w_bar_encoder.to(self.opts.device)
 
             # Load hypernet
-            self.hypernet.load_state_dict(common.get_keys(ckpt, "hypernet"), strict=True)
+            self.hypernet.load_state_dict(
+                common.get_keys(ckpt, "hypernet"), strict=True
+            )
             self.hypernet.to(self.opts.device)
 
             # Load discriminator
-            self.discriminator.load_state_dict(common.get_keys(ckpt, "discriminator"), strict=True)
+            self.discriminator.load_state_dict(
+                common.get_keys(ckpt, "discriminator"), strict=True
+            )
             self.discriminator.to(self.opts.device)
 
-            print("Loaded pretrained HyperInverter from: {}".format(self.opts.checkpoint_path))
+            print(
+                "Loaded pretrained HyperInverter from: {}".format(
+                    self.opts.checkpoint_path
+                )
+            )
         else:
             w_bar_encoder_ckpt = self.__get_encoder_checkpoint()
             self.w_bar_encoder.load_state_dict(w_bar_encoder_ckpt, strict=False)
@@ -197,7 +215,9 @@ class HyperInverter(nn.Module):
 
         # Genenerate W-images
         with torch.no_grad():
-            w_images = self.decoder[0].synthesis(w_codes, added_weights=None, noise_mode="const")
+            w_images = self.decoder[0].synthesis(
+                w_codes, added_weights=None, noise_mode="const"
+            )
 
         # ======== Phase 2 ======== #
 
@@ -205,7 +225,9 @@ class HyperInverter(nn.Module):
         w_bar_codes = self.w_bar_encoder(x)
 
         # Get w image features
-        w_images_resized = F.interpolate(w_images, size=(256, 256), mode="bilinear", align_corners=False)
+        w_images_resized = F.interpolate(
+            w_images, size=(256, 256), mode="bilinear", align_corners=False
+        )
         w_image_codes = self.w_bar_encoder(w_images_resized)
 
         # Predict weights added to weights of StyleGAN2-Ada synthesis network
@@ -221,12 +243,16 @@ class HyperInverter(nn.Module):
                 pred_weights_per_sample[key] = predicted_weights[key][idx]
 
             # Convert to dict in order to feed to generator
-            added_weights = common.convert_predicted_weights_to_dict(pred_weights_per_sample)
+            added_weights = common.convert_predicted_weights_to_dict(
+                pred_weights_per_sample
+            )
 
             # Gen final image
             w_code = w_codes[idx].unsqueeze(0)
             final_image = (
-                self.decoder[idx].synthesis(w_code, added_weights=added_weights, noise_mode="const").squeeze(0)
+                self.decoder[idx]
+                .synthesis(w_code, added_weights=added_weights, noise_mode="const")
+                .squeeze(0)
             )
             final_images.append(final_image)
 

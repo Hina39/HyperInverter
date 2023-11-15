@@ -5,7 +5,19 @@ https://github.com/NVIDIA/pix2pixHD/blob/master/data/image_folder.py
 import os
 
 
-IMG_EXTENSIONS = [".jpg", ".JPG", ".jpeg", ".JPEG", ".png", ".PNG", ".ppm", ".PPM", ".bmp", ".BMP", ".tiff"]
+IMG_EXTENSIONS = [
+    ".jpg",
+    ".JPG",
+    ".jpeg",
+    ".JPEG",
+    ".png",
+    ".PNG",
+    ".ppm",
+    ".PPM",
+    ".bmp",
+    ".BMP",
+    ".tiff",
+]
 
 
 def is_image_file(filename):

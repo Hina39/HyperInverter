@@ -6,14 +6,17 @@ from training.projectors import w_projector
 
 class SG2LatentCreator(BaseLatentCreator):
     def __init__(self, G, domain, projection_steps=600):  # 600 for W space
-
         if domain == "human_faces":
             im_size = (1024, 1024)
         elif domain == "churches":
             im_size = (256, 256)
 
         self.data_preprocess = transforms.Compose(
-            [transforms.Resize(im_size), transforms.ToTensor(), transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]
+            [
+                transforms.Resize(im_size),
+                transforms.ToTensor(),
+                transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+            ]
         )
 
         super().__init__("SG2", self.data_preprocess)
@@ -22,7 +25,12 @@ class SG2LatentCreator(BaseLatentCreator):
 
     def run_projection(self, image):
         image = torch.squeeze((image.cuda() + 1) / 2) * 255
-        w = w_projector.project(self.G, image, device=torch.device("cuda:0"), num_steps=self.projection_steps)
+        w = w_projector.project(
+            self.G,
+            image,
+            device=torch.device("cuda:0"),
+            num_steps=self.projection_steps,
+        )
 
         return w, None
 

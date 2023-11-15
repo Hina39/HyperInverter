@@ -28,10 +28,18 @@ fake_filenames = sorted(os.listdir(args.fake_path))
 
 scores = []
 for real_fn, fake_fn in tqdm(zip(real_filenames, fake_filenames)):
-    gt_image = Image.open(os.path.join(args.real_path, real_fn)).convert("RGB").resize(image_size)
+    gt_image = (
+        Image.open(os.path.join(args.real_path, real_fn))
+        .convert("RGB")
+        .resize(image_size)
+    )
     gt_image = image_transform(gt_image).cuda().unsqueeze(0)
 
-    pred_image = Image.open(os.path.join(args.fake_path, fake_fn)).convert("RGB").resize(image_size)
+    pred_image = (
+        Image.open(os.path.join(args.fake_path, fake_fn))
+        .convert("RGB")
+        .resize(image_size)
+    )
     pred_image = image_transform(pred_image).cuda().unsqueeze(0)
 
     if args.metric == "ms-ssim":

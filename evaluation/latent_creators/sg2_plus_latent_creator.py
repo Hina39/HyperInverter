@@ -12,7 +12,11 @@ class SG2PlusLatentCreator(BaseLatentCreator):
             im_size = (256, 256)
 
         self.data_preprocess = transforms.Compose(
-            [transforms.Resize(im_size), transforms.ToTensor(), transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]
+            [
+                transforms.Resize(im_size),
+                transforms.ToTensor(),
+                transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+            ]
         )
 
         super().__init__("SG2_plus", self.data_preprocess)
@@ -22,7 +26,12 @@ class SG2PlusLatentCreator(BaseLatentCreator):
 
     def run_projection(self, image):
         image = torch.squeeze((image.cuda() + 1) / 2) * 255
-        w = w_plus_projector.project(self.G, image, device=torch.device("cuda:0"), num_steps=self.projection_steps)
+        w = w_plus_projector.project(
+            self.G,
+            image,
+            device=torch.device("cuda:0"),
+            num_steps=self.projection_steps,
+        )
 
         return w, None
 

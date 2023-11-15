@@ -2,7 +2,9 @@ import torch
 from PIL import Image
 
 
-def save_concat_image(base_dir, image_latents, added_weights, G, file_name, extra_image=None):
+def save_concat_image(
+    base_dir, image_latents, added_weights, G, file_name, extra_image=None
+):
     images_to_save = []
     for latent, aws in zip(image_latents, added_weights):
         images_to_save.append(get_image_from_w(latent, aws, G))
@@ -39,5 +41,12 @@ def get_image_from_w(w, added_weights, G):
         w = w.unsqueeze(0)
     with torch.no_grad():
         img = G.synthesis(w, added_weights=added_weights, noise_mode="const")
-        img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8).detach().cpu().numpy()
+        img = (
+            (img.permute(0, 2, 3, 1) * 127.5 + 128)
+            .clamp(0, 255)
+            .to(torch.uint8)
+            .detach()
+            .cpu()
+            .numpy()
+        )
     return img[0]

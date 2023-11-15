@@ -34,7 +34,9 @@ def extract_on_paths(file_paths):
     facenet.cuda()
     facenet.eval()
     mtcnn = MTCNN()
-    id_transform = trans.Compose([trans.ToTensor(), trans.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])])
+    id_transform = trans.Compose(
+        [trans.ToTensor(), trans.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]
+    )
 
     pid = mp.current_process().name
     print("\t{} is starting to extract on {} images".format(pid, len(file_paths)))
@@ -85,7 +87,9 @@ def run(args):
         if f.endswith(".jpg") or f.endswith(".png"):
             file_paths.append([image_path, gt_path.replace(".png", ".jpg")])
 
-    file_chunks = list(chunks(file_paths, int(math.ceil(len(file_paths) / args.num_threads))))
+    file_chunks = list(
+        chunks(file_paths, int(math.ceil(len(file_paths) / args.num_threads)))
+    )
     pool = mp.Pool(args.num_threads)
     print("Running on {} paths\nHere we goooo".format(len(file_paths)))
 

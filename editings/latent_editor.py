@@ -9,7 +9,9 @@ class LatentEditor(object):
 
     def apply_interfacegan(self, latent, direction, factor=1, factor_range=None):
         edit_latents = []
-        if factor_range is not None:  # Apply a range of editing factors. for example, (-5, 5)
+        if (
+            factor_range is not None
+        ):  # Apply a range of editing factors. for example, (-5, 5)
             for f in range(*factor_range):
                 edit_latent = latent + f * direction
                 edit_latents.append(edit_latent)

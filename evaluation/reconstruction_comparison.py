@@ -35,8 +35,9 @@ class ReconstructionComparison:
         )
 
     def create_output_dirs(self, full_image_name):
-
-        output_base_dir_path = f"{self.args.output_dir}/{self.args.input_data_id}/{full_image_name}"
+        output_base_dir_path = (
+            f"{self.args.output_dir}/{self.args.input_data_id}/{full_image_name}"
+        )
         os.makedirs(output_base_dir_path, exist_ok=True)
 
         self.concat_base_dir = f"{output_base_dir_path}/reconstruction"
@@ -69,14 +70,16 @@ class ReconstructionComparison:
         self.experiment_creator.run_experiment()
 
         for idx, image_path in tqdm(
-            enumerate(self.experiment_creator.images_paths), total=len(self.experiment_creator.images_paths)
+            enumerate(self.experiment_creator.images_paths),
+            total=len(self.experiment_creator.images_paths),
         ):
-
             if images_counter >= self.args.max_num_images:
                 break
 
             image_name = image_path.split(".")[0].split("/")[-1]
-            target_image = Image.open(self.experiment_creator.target_paths[idx]).resize(self.img_size)
+            target_image = Image.open(self.experiment_creator.target_paths[idx]).resize(
+                self.img_size
+            )
 
             # Get latents
             image_latents, added_weights = self.get_image_latent_codes(image_name)

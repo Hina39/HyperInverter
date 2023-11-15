@@ -52,7 +52,11 @@ def project(
     start_w = initial_w if initial_w is not None else w_avg
 
     # Setup noise inputs.
-    noise_bufs = {name: buf for (name, buf) in G.synthesis.named_buffers() if "noise_const" in name}
+    noise_bufs = {
+        name: buf
+        for (name, buf) in G.synthesis.named_buffers()
+        if "noise_const" in name
+    }
 
     # Load VGG16 feature detector.
     url = "https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/metrics/vgg16.pt"
@@ -70,7 +74,11 @@ def project(
         start_w, dtype=torch.float32, device=device, requires_grad=True
     )  # pylint: disable=not-callable
 
-    optimizer = torch.optim.Adam([w_opt] + list(noise_bufs.values()), betas=(0.9, 0.999), lr=initial_learning_rate)
+    optimizer = torch.optim.Adam(
+        [w_opt] + list(noise_bufs.values()),
+        betas=(0.9, 0.999),
+        lr=initial_learning_rate,
+    )
 
     # Init noise.
     for buf in noise_bufs.values():
@@ -78,10 +86,11 @@ def project(
         buf.requires_grad = True
 
     for step in tqdm(range(num_steps)):
-
         # Learning rate schedule.
         t = step / num_steps
-        w_noise_scale = w_std * initial_noise_factor * max(0.0, 1.0 - t / noise_ramp_length) ** 2
+        w_noise_scale = (
+            w_std * initial_noise_factor * max(0.0, 1.0 - t / noise_ramp_length) ** 2
+        )
         lr_ramp = min(1.0, (1.0 - t) / lr_rampdown_length)
         lr_ramp = 0.5 - 0.5 * np.cos(lr_ramp * np.pi)
         lr_ramp = lr_ramp * min(1.0, t / lr_rampup_length)
@@ -120,7 +129,9 @@ def project(
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         optimizer.step()
-        logprint(f"step {step + 1:>4d}/{num_steps}: dist {dist:<4.2f} loss {float(loss):<5.2f}")
+        logprint(
+            f"step {step + 1:>4d}/{num_steps}: dist {dist:<4.2f} loss {float(loss):<5.2f}"
+        )
 
         # Normalize noise.
         with torch.no_grad():

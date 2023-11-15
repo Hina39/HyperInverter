@@ -33,7 +33,15 @@ def constant(value, shape=None, dtype=None, device=None, memory_format=None):
     if memory_format is None:
         memory_format = torch.contiguous_format
 
-    key = (value.shape, value.dtype, value.tobytes(), shape, dtype, device, memory_format)
+    key = (
+        value.shape,
+        value.dtype,
+        value.tobytes(),
+        shape,
+        dtype,
+        device,
+        memory_format,
+    )
     tensor = _constant_cache.get(key, None)
     if tensor is None:
         tensor = torch.as_tensor(value.copy(), dtype=dtype, device=device)
@@ -51,14 +59,18 @@ try:
     nan_to_num = torch.nan_to_num  # 1.8.0a0
 except AttributeError:
 
-    def nan_to_num(input, nan=0.0, posinf=None, neginf=None, *, out=None):  # pylint: disable=redefined-builtin
+    def nan_to_num(
+        input, nan=0.0, posinf=None, neginf=None, *, out=None
+    ):  # pylint: disable=redefined-builtin
         assert isinstance(input, torch.Tensor)
         if posinf is None:
             posinf = torch.finfo(input.dtype).max
         if neginf is None:
             neginf = torch.finfo(input.dtype).min
         assert nan == 0
-        return torch.clamp(input.unsqueeze(0).nansum(0), min=neginf, max=posinf, out=out)
+        return torch.clamp(
+            input.unsqueeze(0).nansum(0), min=neginf, max=posinf, out=out
+        )
 
 
 # ----------------------------------------------------------------------------
@@ -88,13 +100,18 @@ class suppress_tracer_warnings(warnings.catch_warnings):
 
 def assert_shape(tensor, ref_shape):
     if tensor.ndim != len(ref_shape):
-        raise AssertionError(f"Wrong number of dimensions: got {tensor.ndim}, expected {len(ref_shape)}")
+        raise AssertionError(
+            f"Wrong number of dimensions: got {tensor.ndim}, expected {len(ref_shape)}"
+        )
     for idx, (size, ref_size) in enumerate(zip(tensor.shape, ref_shape)):
         if ref_size is None:
             pass
         elif isinstance(ref_size, torch.Tensor):
             with suppress_tracer_warnings():  # as_tensor results are registered as constants
-                symbolic_assert(torch.equal(torch.as_tensor(size), ref_size), f"Wrong size for dimension {idx}")
+                symbolic_assert(
+                    torch.equal(torch.as_tensor(size), ref_size),
+                    f"Wrong size for dimension {idx}",
+                )
         elif isinstance(size, torch.Tensor):
             with suppress_tracer_warnings():  # as_tensor results are registered as constants
                 symbolic_assert(
@@ -102,7 +119,9 @@ def assert_shape(tensor, ref_shape):
                     f"Wrong size for dimension {idx}: expected {ref_size}",
                 )
         elif size != ref_size:
-            raise AssertionError(f"Wrong size for dimension {idx}: got {size}, expected {ref_size}")
+            raise AssertionError(
+                f"Wrong size for dimension {idx}: got {size}, expected {ref_size}"
+            )
 
 
 # ----------------------------------------------------------------------------
@@ -124,7 +143,9 @@ def profiled_function(fn):
 
 
 class InfiniteSampler(torch.utils.data.Sampler):
-    def __init__(self, dataset, rank=0, num_replicas=1, shuffle=True, seed=0, window_size=0.5):
+    def __init__(
+        self, dataset, rank=0, num_replicas=1, shuffle=True, seed=0, window_size=0.5
+    ):
         assert len(dataset) > 0
         assert num_replicas > 0
         assert 0 <= rank < num_replicas
@@ -174,11 +195,15 @@ def named_params_and_buffers(module):
 def copy_params_and_buffers(src_module, dst_module, require_all=False):
     assert isinstance(src_module, torch.nn.Module)
     assert isinstance(dst_module, torch.nn.Module)
-    src_tensors = {name: tensor for name, tensor in named_params_and_buffers(src_module)}
+    src_tensors = {
+        name: tensor for name, tensor in named_params_and_buffers(src_module)
+    }
     for name, tensor in named_params_and_buffers(dst_module):
         assert (name in src_tensors) or (not require_all)
         if name in src_tensors:
-            tensor.copy_(src_tensors[name].detach()).requires_grad_(tensor.requires_grad)
+            tensor.copy_(src_tensors[name].detach()).requires_grad_(
+                tensor.requires_grad
+            )
 
 
 # ----------------------------------------------------------------------------
@@ -249,14 +274,22 @@ def print_module_summary(module, inputs, max_nesting=3, skip_redundant=True):
         e.unique_params = [t for t in e.mod.parameters() if id(t) not in tensors_seen]
         e.unique_buffers = [t for t in e.mod.buffers() if id(t) not in tensors_seen]
         e.unique_outputs = [t for t in e.outputs if id(t) not in tensors_seen]
-        tensors_seen |= {id(t) for t in e.unique_params + e.unique_buffers + e.unique_outputs}
+        tensors_seen |= {
+            id(t) for t in e.unique_params + e.unique_buffers + e.unique_outputs
+        }
 
     # Filter out redundant entries.
     if skip_redundant:
-        entries = [e for e in entries if len(e.unique_params) or len(e.unique_buffers) or len(e.unique_outputs)]
+        entries = [
+            e
+            for e in entries
+            if len(e.unique_params) or len(e.unique_buffers) or len(e.unique_outputs)
+        ]
 
     # Construct table.
-    rows = [[type(module).__name__, "Parameters", "Buffers", "Output shape", "Datatype"]]
+    rows = [
+        [type(module).__name__, "Parameters", "Buffers", "Output shape", "Datatype"]
+    ]
     rows += [["---"] * len(rows[0])]
     param_total = 0
     buffer_total = 0
@@ -277,7 +310,9 @@ def print_module_summary(module, inputs, max_nesting=3, skip_redundant=True):
             ]
         ]
         for idx in range(1, len(e.outputs)):
-            rows += [[name + f":{idx}", "-", "-", output_shapes[idx], output_dtypes[idx]]]
+            rows += [
+                [name + f":{idx}", "-", "-", output_shapes[idx], output_dtypes[idx]]
+            ]
         param_total += param_size
         buffer_total += buffer_size
     rows += [["---"] * len(rows[0])]
@@ -287,7 +322,11 @@ def print_module_summary(module, inputs, max_nesting=3, skip_redundant=True):
     widths = [max(len(cell) for cell in column) for column in zip(*rows)]
     print()
     for row in rows:
-        print("  ".join(cell + " " * (width - len(cell)) for cell, width in zip(row, widths)))
+        print(
+            "  ".join(
+                cell + " " * (width - len(cell)) for cell, width in zip(row, widths)
+            )
+        )
     print()
     return outputs
 

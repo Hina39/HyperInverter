@@ -35,7 +35,11 @@ class E4ELatentCreator(BaseLatentCreator):
 
     def run_projection(self, image):
         _, latent = self.inversion_net(
-            image, randomize_noise=False, return_latents=True, resize=False, input_code=False
+            image,
+            randomize_noise=False,
+            return_latents=True,
+            resize=False,
+            input_code=False,
         )
         return latent, None
 

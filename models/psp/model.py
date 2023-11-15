@@ -33,11 +33,15 @@ class pSp(nn.Module):
         if self.opts.encoder_type == "GradualStyleEncoder":
             encoder = fpn_encoders.GradualStyleEncoder(50, "ir_se", self.opts)
         elif self.opts.encoder_type == "BackboneEncoderUsingLastLayerIntoW":
-            encoder = fpn_encoders.BackboneEncoderUsingLastLayerIntoW(50, "ir_se", self.opts)
+            encoder = fpn_encoders.BackboneEncoderUsingLastLayerIntoW(
+                50, "ir_se", self.opts
+            )
         elif self.opts.encoder_type == "ResNetEncoderUsingLastLayerIntoW":
             encoder = fpn_encoders.ResNetEncoderUsingLastLayerIntoW()
         elif self.opts.encoder_type == "ResNetGradualStyleEncoder":
-            encoder = fpn_encoders.ResNetGradualStyleEncoder(n_styles=self.opts.n_styles)
+            encoder = fpn_encoders.ResNetGradualStyleEncoder(
+                n_styles=self.opts.n_styles
+            )
 
         else:
             raise Exception("{} is not a valid encoders".format(self.opts.encoder_type))
@@ -88,7 +92,6 @@ class pSp(nn.Module):
             self.latent_avg = None
 
     def forward(self, x, resize=True, return_latents=False):
-
         # Encoding image to latent code
         codes = self.encoder(x)
 

@@ -37,9 +37,15 @@ def run():
 
     dataset_args = data_configs.DATASETS[opts.dataset_type]
     transforms_dict = dataset_args["transforms"](opts).get_transforms()
-    dataset = InferenceDataset(root=opts.data_path, transform=transforms_dict["transform_inference"], opts=opts)
+    dataset = InferenceDataset(
+        root=opts.data_path, transform=transforms_dict["transform_inference"], opts=opts
+    )
     dataloader = DataLoader(
-        dataset, batch_size=opts.batch_size, shuffle=False, num_workers=int(opts.workers), drop_last=False
+        dataset,
+        batch_size=opts.batch_size,
+        shuffle=False,
+        num_workers=int(opts.workers),
+        drop_last=False,
     )
 
     if opts.n_images is None:
@@ -66,8 +72,13 @@ def run():
 
             if opts.couple_outputs or global_i % 100 == 0:
                 input_im = log_input_image(input_batch[i])
-                res = np.concatenate([np.array(input_im), np.array(w_image), np.array(final_image)], axis=1)
-                Image.fromarray(res).save(os.path.join(out_path_coupled, os.path.basename(im_path)))
+                res = np.concatenate(
+                    [np.array(input_im), np.array(w_image), np.array(final_image)],
+                    axis=1,
+                )
+                Image.fromarray(res).save(
+                    os.path.join(out_path_coupled, os.path.basename(im_path))
+                )
 
             im_save_path = os.path.join(out_path_results, os.path.basename(im_path))
             Image.fromarray(np.array(final_image)).save(im_save_path)

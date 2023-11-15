@@ -38,7 +38,11 @@ class pSp(nn.Module):
 
     def load_weights(self):
         if self.opts.checkpoint_path is not None:
-            print("Loading e4e over the pSp framework from checkpoint: {}".format(self.opts.checkpoint_path))
+            print(
+                "Loading e4e over the pSp framework from checkpoint: {}".format(
+                    self.opts.checkpoint_path
+                )
+            )
             ckpt = torch.load(self.opts.checkpoint_path, map_location="cpu")
             self.encoder.load_state_dict(get_keys(ckpt, "encoder"), strict=True)
             self.decoder.load_state_dict(get_keys(ckpt, "decoder"), strict=True)
@@ -70,7 +74,9 @@ class pSp(nn.Module):
             # normalize with respect to the center of an average face
             if self.opts.start_from_latent_avg:
                 if codes.ndim == 2:
-                    codes = codes + self.latent_avg.repeat(codes.shape[0], 1, 1)[:, 0, :]
+                    codes = (
+                        codes + self.latent_avg.repeat(codes.shape[0], 1, 1)[:, 0, :]
+                    )
                 else:
                     codes = codes + self.latent_avg.repeat(codes.shape[0], 1, 1)
 
@@ -78,7 +84,9 @@ class pSp(nn.Module):
             for i in latent_mask:
                 if inject_latent is not None:
                     if alpha is not None:
-                        codes[:, i] = alpha * inject_latent[:, i] + (1 - alpha) * codes[:, i]
+                        codes[:, i] = (
+                            alpha * inject_latent[:, i] + (1 - alpha) * codes[:, i]
+                        )
                     else:
                         codes[:, i] = inject_latent[:, i]
                 else:
@@ -86,7 +94,10 @@ class pSp(nn.Module):
 
         input_is_latent = not input_code
         images, result_latent = self.decoder(
-            [codes], input_is_latent=input_is_latent, randomize_noise=randomize_noise, return_latents=return_latents
+            [codes],
+            input_is_latent=input_is_latent,
+            randomize_noise=randomize_noise,
+            return_latents=return_latents,
         )
 
         if resize:

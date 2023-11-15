@@ -18,13 +18,19 @@ class BackboneEncoderUsingLastLayerIntoW(Module):
             unit_module = bottleneck_IR
         elif mode == "ir_se":
             unit_module = bottleneck_IR_SE
-        self.input_layer = Sequential(Conv2d(3, 64, (3, 3), 1, 1, bias=False), BatchNorm2d(64), PReLU(64))
+        self.input_layer = Sequential(
+            Conv2d(3, 64, (3, 3), 1, 1, bias=False), BatchNorm2d(64), PReLU(64)
+        )
         self.output_pool = torch.nn.AdaptiveAvgPool2d((1, 1))
         self.linear = EqualLinear(512, 512, lr_mul=1)
         modules = []
         for block in blocks:
             for bottleneck in block:
-                modules.append(unit_module(bottleneck.in_channel, bottleneck.depth, bottleneck.stride))
+                modules.append(
+                    unit_module(
+                        bottleneck.in_channel, bottleneck.depth, bottleneck.stride
+                    )
+                )
         self.body = Sequential(*modules)
 
     def forward(self, x):
@@ -47,9 +53,15 @@ class GradualStyleBlock(Module):
         self.spatial = spatial
         num_pools = int(np.log2(spatial))
         modules = []
-        modules += [Conv2d(in_c, out_c, kernel_size=3, stride=2, padding=1), nn.LeakyReLU()]
+        modules += [
+            Conv2d(in_c, out_c, kernel_size=3, stride=2, padding=1),
+            nn.LeakyReLU(),
+        ]
         for i in range(num_pools - 1):
-            modules += [Conv2d(out_c, out_c, kernel_size=3, stride=2, padding=1), nn.LeakyReLU()]
+            modules += [
+                Conv2d(out_c, out_c, kernel_size=3, stride=2, padding=1),
+                nn.LeakyReLU(),
+            ]
         self.convs = nn.Sequential(*modules)
         self.linear = EqualLinear(out_c, out_c, lr_mul=1)
 
@@ -70,11 +82,19 @@ class GradualStyleEncoder(Module):
             unit_module = bottleneck_IR
         elif mode == "ir_se":
             unit_module = bottleneck_IR_SE
-        self.input_layer = Sequential(Conv2d(opts.input_nc, 64, (3, 3), 1, 1, bias=False), BatchNorm2d(64), PReLU(64))
+        self.input_layer = Sequential(
+            Conv2d(opts.input_nc, 64, (3, 3), 1, 1, bias=False),
+            BatchNorm2d(64),
+            PReLU(64),
+        )
         modules = []
         for block in blocks:
             for bottleneck in block:
-                modules.append(unit_module(bottleneck.in_channel, bottleneck.depth, bottleneck.stride))
+                modules.append(
+                    unit_module(
+                        bottleneck.in_channel, bottleneck.depth, bottleneck.stride
+                    )
+                )
         self.body = Sequential(*modules)
 
         self.styles = nn.ModuleList()
@@ -148,9 +168,15 @@ class StyleBlock(Module):
         super(StyleBlock, self).__init__()
         self.out_c = out_c
         modules = []
-        modules += [Conv2d(in_c, out_c, kernel_size=3, stride=2, padding=1), nn.LeakyReLU()]
+        modules += [
+            Conv2d(in_c, out_c, kernel_size=3, stride=2, padding=1),
+            nn.LeakyReLU(),
+        ]
         for i in range(num_pools - 1):
-            modules += [Conv2d(out_c, out_c, kernel_size=3, stride=2, padding=1), nn.LeakyReLU()]
+            modules += [
+                Conv2d(out_c, out_c, kernel_size=3, stride=2, padding=1),
+                nn.LeakyReLU(),
+            ]
         self.convs = nn.Sequential(*modules)
 
     def forward(self, x):
@@ -168,11 +194,17 @@ class LayerWiseEncoder(Module):
             unit_module = bottleneck_IR
         elif mode == "ir_se":
             unit_module = bottleneck_IR_SE
-        self.input_layer = Sequential(Conv2d(3, 64, (3, 3), 1, 1, bias=False), BatchNorm2d(64), PReLU(64))
+        self.input_layer = Sequential(
+            Conv2d(3, 64, (3, 3), 1, 1, bias=False), BatchNorm2d(64), PReLU(64)
+        )
         modules = []
         for block in blocks:
             for bottleneck in block:
-                modules.append(unit_module(bottleneck.in_channel, bottleneck.depth, bottleneck.stride))
+                modules.append(
+                    unit_module(
+                        bottleneck.in_channel, bottleneck.depth, bottleneck.stride
+                    )
+                )
         self.body = Sequential(*modules)
 
         self.styles = nn.ModuleList()
@@ -238,7 +270,12 @@ class ResNetLayerWiseEncoder(Module):
         self.relu = PReLU(64)
 
         resnet_basenet = resnet34(pretrained=True)
-        blocks = [resnet_basenet.layer1, resnet_basenet.layer2, resnet_basenet.layer3, resnet_basenet.layer4]
+        blocks = [
+            resnet_basenet.layer1,
+            resnet_basenet.layer2,
+            resnet_basenet.layer3,
+            resnet_basenet.layer4,
+        ]
 
         modules = []
         for block in blocks:
@@ -306,7 +343,12 @@ class ResNetEncoderUsingLastLayerIntoW(Module):
         self.relu = PReLU(64)
 
         resnet_basenet = resnet34(pretrained=True)
-        blocks = [resnet_basenet.layer1, resnet_basenet.layer2, resnet_basenet.layer3, resnet_basenet.layer4]
+        blocks = [
+            resnet_basenet.layer1,
+            resnet_basenet.layer2,
+            resnet_basenet.layer3,
+            resnet_basenet.layer4,
+        ]
 
         modules = []
         for block in blocks:

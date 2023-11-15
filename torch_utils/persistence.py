@@ -259,7 +259,10 @@ def _check_pickleable(obj):
             return [[recurse(x), recurse(y)] for x, y in obj.items()]
         if isinstance(obj, (str, int, float, bool, bytes, bytearray)):
             return None  # Python primitive types are pickleable.
-        if f"{type(obj).__module__}.{type(obj).__name__}" in ["numpy.ndarray", "torch.Tensor"]:
+        if f"{type(obj).__module__}.{type(obj).__name__}" in [
+            "numpy.ndarray",
+            "torch.Tensor",
+        ]:
             return None  # NumPy arrays and PyTorch tensors are pickleable.
         if is_persistent(obj):
             return None  # Persistent objects are pickleable, by virtue of the constructor check.

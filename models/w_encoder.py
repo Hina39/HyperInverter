@@ -36,7 +36,9 @@ class W_Encoder(nn.Module):
 
         if "ffhq" in self.opts.dataset_type or "celeb" in self.opts.dataset_type:
             # Using ResNet-IRSE50 for facial domain
-            self.w_encoder = fpn_encoders.BackboneEncoderUsingLastLayerIntoW(50, "ir_se", opts)
+            self.w_encoder = fpn_encoders.BackboneEncoderUsingLastLayerIntoW(
+                50, "ir_se", opts
+            )
         else:
             # Using ResNet34 pre-trained on ImageNet for other domains
             self.w_encoder = fpn_encoders.ResNetEncoderUsingLastLayerIntoW()
@@ -78,7 +80,9 @@ class W_Encoder(nn.Module):
         w_codes = w_codes.unsqueeze(1).repeat([1, num_ws, 1])
 
         # Genenerate W-images
-        w_images = self.decoder.synthesis(w_codes, added_weights=None, noise_mode="const")
+        w_images = self.decoder.synthesis(
+            w_codes, added_weights=None, noise_mode="const"
+        )
 
         return_data = [w_images]
         if return_latents:

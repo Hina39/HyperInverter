@@ -56,7 +56,9 @@ class EasyDict(dict):
 class Logger(object):
     """Redirect stderr to stdout, optionally print stdout to a file, and optionally force flushing on both stdout and the file."""
 
-    def __init__(self, file_name: str = None, file_mode: str = "w", should_flush: bool = True):
+    def __init__(
+        self, file_name: str = None, file_mode: str = "w", should_flush: bool = True
+    ):
         self.file = None
 
         if file_name is not None:
@@ -152,7 +154,9 @@ def format_time(seconds: Union[int, float]) -> str:
     elif s < 24 * 60 * 60:
         return "{0}h {1:02}m {2:02}s".format(s // (60 * 60), (s // 60) % 60, s % 60)
     else:
-        return "{0}d {1:02}h {2:02}m".format(s // (24 * 60 * 60), (s // (60 * 60)) % 24, (s // 60) % 60)
+        return "{0}d {1:02}h {2:02}m".format(
+            s // (24 * 60 * 60), (s // (60 * 60)) % 24, (s // 60) % 60
+        )
 
 
 def ask_yes_no(question: str) -> bool:
@@ -235,7 +239,9 @@ def get_module_from_obj_name(obj_name: str) -> Tuple[types.ModuleType, str]:
 
     # list alternatives for (module_name, local_obj_name)
     parts = obj_name.split(".")
-    name_pairs = [(".".join(parts[:i]), ".".join(parts[i:])) for i in range(len(parts), 0, -1)]
+    name_pairs = [
+        (".".join(parts[:i]), ".".join(parts[i:])) for i in range(len(parts), 0, -1)
+    ]
 
     # try each alternative in turn
     for module_name, local_obj_name in name_pairs:
@@ -251,7 +257,9 @@ def get_module_from_obj_name(obj_name: str) -> Tuple[types.ModuleType, str]:
         try:
             importlib.import_module(module_name)  # may raise ImportError
         except ImportError:
-            if not str(sys.exc_info()[1]).startswith("No module named '" + module_name + "'"):
+            if not str(sys.exc_info()[1]).startswith(
+                "No module named '" + module_name + "'"
+            ):
                 raise
 
     # maybe the requested attribute is missing?
@@ -457,15 +465,22 @@ def open_url(
                         content_str = res.content.decode("utf-8")
                         if "download_warning" in res.headers.get("Set-Cookie", ""):
                             links = [
-                                html.unescape(link) for link in content_str.split('"') if "export=download" in link
+                                html.unescape(link)
+                                for link in content_str.split('"')
+                                if "export=download" in link
                             ]
                             if len(links) == 1:
                                 url = requests.compat.urljoin(url, links[0])
                                 raise IOError("Google Drive virus checker nag")
                         if "Google Drive - Quota exceeded" in content_str:
-                            raise IOError("Google Drive download quota exceeded -- please try again later")
+                            raise IOError(
+                                "Google Drive download quota exceeded -- please try again later"
+                            )
 
-                    match = re.search(r'filename="([^"]*)"', res.headers.get("Content-Disposition", ""))
+                    match = re.search(
+                        r'filename="([^"]*)"',
+                        res.headers.get("Content-Disposition", ""),
+                    )
                     url_name = match[1] if match else url
                     url_data = res.content
                     if verbose:
@@ -485,7 +500,9 @@ def open_url(
     if cache:
         safe_name = re.sub(r"[^0-9a-zA-Z-._]", "_", url_name)
         cache_file = os.path.join(cache_dir, url_md5 + "_" + safe_name)
-        temp_file = os.path.join(cache_dir, "tmp_" + uuid.uuid4().hex + "_" + url_md5 + "_" + safe_name)
+        temp_file = os.path.join(
+            cache_dir, "tmp_" + uuid.uuid4().hex + "_" + url_md5 + "_" + safe_name
+        )
         os.makedirs(cache_dir, exist_ok=True)
         with open(temp_file, "wb") as f:
             f.write(url_data)

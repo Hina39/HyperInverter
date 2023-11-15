@@ -117,15 +117,21 @@ for method in args.methods.split(","):
     interp_images = []
     if method == "hyper_inverter":
         # Linear interpolate added weights
-        added_weights_interps = linear_interpolate_weights(left_added_weights, right_added_weights, args.steps)
+        added_weights_interps = linear_interpolate_weights(
+            left_added_weights, right_added_weights, args.steps
+        )
         for latent, added_weights in zip(latent_interps, added_weights_interps):
             added_weights = convert_predicted_weights_to_dict(added_weights)
-            interp_image = G.synthesis(latent, added_weights=added_weights, noise_mode="const")[0]
+            interp_image = G.synthesis(
+                latent, added_weights=added_weights, noise_mode="const"
+            )[0]
             interp_image = tensor2im(interp_image).resize(saved_image_size)
             interp_images.append(interp_image)
     else:
         for latent in latent_interps:
-            interp_image = G.synthesis(latent, added_weights=None, noise_mode="const")[0]
+            interp_image = G.synthesis(latent, added_weights=None, noise_mode="const")[
+                0
+            ]
             interp_image = tensor2im(interp_image).resize(saved_image_size)
             interp_images.append(interp_image)
 
@@ -137,7 +143,9 @@ for method in args.methods.split(","):
         interp_gammas = list(np.linspace(0, 1, args.steps))
         for gamma, interp_image in zip(interp_gammas, interp_images):
             gamma = np.round(gamma, 2)
-            interp_image.save(f"{args.saved_dir}/{method}/{args.saved_file_name}/{gamma}.png")
+            interp_image.save(
+                f"{args.saved_dir}/{method}/{args.saved_file_name}/{gamma}.png"
+            )
             concat_image = get_concat_h(concat_image, interp_image, gap=10)
         concat_image.save(f"{args.saved_dir}/{method}/{args.saved_file_name}.png")
 

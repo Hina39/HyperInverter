@@ -42,7 +42,6 @@ class Ranger(Optimizer):
         gc_conv_only=False
         # Gradient centralization on or off, applied to conv layers only or conv + fc layers
     ):
-
         # parameter checks
         if not 0.0 <= alpha <= 1.0:
             raise ValueError(f"Invalid slow update rate: {alpha}")
@@ -96,20 +95,23 @@ class Ranger(Optimizer):
 
         # Evaluate averages and grad, update param tensors
         for group in self.param_groups:
-
             for p in group["params"]:
                 if p.grad is None:
                     continue
                 grad = p.grad.data.float()
 
                 if grad.is_sparse:
-                    raise RuntimeError("Ranger optimizer does not support sparse gradients")
+                    raise RuntimeError(
+                        "Ranger optimizer does not support sparse gradients"
+                    )
 
                 p_data_fp32 = p.data.float()
 
                 state = self.state[p]  # get state dict for this param
 
-                if len(state) == 0:  # if first time to run...init dictionary with our desired entries
+                if (
+                    len(state) == 0
+                ):  # if first time to run...init dictionary with our desired entries
                     # if self.first_run_check==0:
                     # self.first_run_check=1
                     # print("Initializing slow buffer...should not see this at load from saved model!")
@@ -180,7 +182,11 @@ class Ranger(Optimizer):
                 # we do it at the param level instead of group level
                 if state["step"] % group["k"] == 0:
                     slow_p = state["slow_buffer"]  # get access to slow param tensor
-                    slow_p.add_(self.alpha, p.data - slow_p)  # (fast weights - slow weights) * alpha
-                    p.data.copy_(slow_p)  # copy interpolated weights to RAdam param tensor
+                    slow_p.add_(
+                        self.alpha, p.data - slow_p
+                    )  # (fast weights - slow weights) * alpha
+                    p.data.copy_(
+                        slow_p
+                    )  # copy interpolated weights to RAdam param tensor
 
         return loss

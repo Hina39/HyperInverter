@@ -15,7 +15,6 @@ sys.path.append("..")
 
 class LatentEditorWrapper:
     def __init__(self, domain="human_faces"):
-
         self.domain = domain
 
         if self.domain == "human_faces":
@@ -26,7 +25,8 @@ class LatentEditorWrapper:
             }
 
             self.interfacegan_directions_tensors = {
-                name: torch.load(path).cuda() for name, path in self.interfacegan_directions.items()
+                name: torch.load(path).cuda()
+                for name, path in self.interfacegan_directions.items()
             }
 
             self.ganspace_pca = torch.load(f"{paths_config.editing_paths['ffhq_pca']}")
@@ -60,7 +60,9 @@ class LatentEditorWrapper:
             }
 
         elif self.domain == "churches":
-            self.ganspace_pca = torch.load(f"{paths_config.editing_paths['church_pca']}")
+            self.ganspace_pca = torch.load(
+                f"{paths_config.editing_paths['church_pca']}"
+            )
 
             self.ganspace_directions = {
                 "clouds": (20, 7, 9, -20.0),
@@ -71,10 +73,13 @@ class LatentEditorWrapper:
 
         self.latent_editor = LatentEditor()
 
-    def get_single_styleclip_latent_mapper_edits_with_direction(self, start_w, factors, direction):
+    def get_single_styleclip_latent_mapper_edits_with_direction(
+        self, start_w, factors, direction
+    ):
         latents_to_display = []
         mapper_checkpoint_path = os.path.join(
-            paths_config.styleclip_paths["style_clip_pretrained_mappers"], f"{direction}.pt"
+            paths_config.styleclip_paths["style_clip_pretrained_mappers"],
+            f"{direction}.pt",
         )
         ensure_checkpoint_exists(str(mapper_checkpoint_path))
         ckpt = torch.load(mapper_checkpoint_path, map_location="cpu")
@@ -108,11 +113,15 @@ class LatentEditorWrapper:
             edit_direction = list(ganspace_direction)
             edit_direction[-1] = factor
             edit_direction = tuple(edit_direction)
-            new_w = self.latent_editor.apply_ganspace(start_w, self.ganspace_pca, [edit_direction])
+            new_w = self.latent_editor.apply_ganspace(
+                start_w, self.ganspace_pca, [edit_direction]
+            )
             latents_to_display.append(new_w)
         return latents_to_display
 
-    def get_single_interface_gan_edits_with_direction(self, start_w, factors, direction):
+    def get_single_interface_gan_edits_with_direction(
+        self, start_w, factors, direction
+    ):
         latents_to_display = []
         for factor in factors:
             latents_to_display.append(

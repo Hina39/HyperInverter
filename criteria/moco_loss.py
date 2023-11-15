@@ -27,7 +27,9 @@ class MocoLoss(nn.Module):
         # rename moco pre-trained keys
         for k in list(state_dict.keys()):
             # retain only encoder_q up to before the embedding layer
-            if k.startswith("module.encoder_q") and not k.startswith("module.encoder_q.fc"):
+            if k.startswith("module.encoder_q") and not k.startswith(
+                "module.encoder_q.fc"
+            ):
                 # remove prefix
                 state_dict[k[len("module.encoder_q.") :]] = state_dict[k]
             # delete renamed or unused k
@@ -60,7 +62,11 @@ class MocoLoss(nn.Module):
             diff_input = y_hat_feats[i].dot(x_feats[i])
             diff_views = y_feats[i].dot(x_feats[i])
             sim_logs.append(
-                {"diff_target": float(diff_target), "diff_input": float(diff_input), "diff_views": float(diff_views)}
+                {
+                    "diff_target": float(diff_target),
+                    "diff_input": float(diff_input),
+                    "diff_views": float(diff_views),
+                }
             )
             loss += 1 - diff_target
             sim_diff = float(diff_target) - float(diff_views)

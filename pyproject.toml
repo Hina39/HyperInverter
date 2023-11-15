@@ -63,6 +63,12 @@ name = "torch_cu111"
 url = "https://download.pytorch.org/whl/torch_stable.html"
 priority = "explicit"
 
+
+[tool.poetry.group.dev.dependencies]
+black = "<=23.11.0"
+mypy = "<=1.7.0"
+ruff = "^0.1.5"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

@@ -20,12 +20,18 @@ from utils.model_utils import RESNET_MAPPING
 
 
 def get_target_shapes(opts):
+    general_shape = None  # Add this line
     if opts.target_shape_name == "conv_without_bias":
         general_shape = STYLEGAN2_ADA_CONV_WEIGHT_WITHOUT_BIAS_SHAPES
     elif opts.target_shape_name == "all_without_bias":
         general_shape = STYLEGAN2_ADA_ALL_WEIGHT_WITHOUT_BIAS_SHAPES
     elif opts.target_shape_name == "conv_without_bias_without_torgb":
         general_shape = STYLEGAN2_ADA_CONV_WEIGHT_WITHOUT_BIAS_WITHOUT_TO_RGB_SHAPES
+
+     # Add a check to ensure general_shape is not None
+    if general_shape is None:
+        raise ValueError(f"Invalid target_shape_name: {opts.target_shape_name}")
+
 
     target_shape = {}
     for layer_name in general_shape:
@@ -95,6 +101,7 @@ class HyperInverter(nn.Module):
         elif self.opts.dataset_type == "church_encode":
             stylegan_ckpt_path = model_paths["stylegan2_ada_church"]
 
+        D_original = None  # Add this line
         with open(stylegan_ckpt_path, "rb") as f:
             ckpt = pickle.load(f)
 
@@ -107,6 +114,11 @@ class HyperInverter(nn.Module):
                 # Discriminator
                 D_original = ckpt["D"]
                 D_original = D_original.float()
+
+         # Add a check to ensure D_original is not None
+        if D_original is None:
+            raise ValueError("D_original is not defined. Check if self.opts.hyper_adv_lambda > 0")
+
 
         decoder = Generator(**G_original.init_kwargs)
         decoder.load_state_dict(G_original.state_dict())

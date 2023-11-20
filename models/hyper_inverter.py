@@ -207,6 +207,8 @@ class HyperInverter(nn.Module):
         # ======== Phase 1 ======== #
 
         # Obtain w code via W Encoder
+        # content code = w_codes
+        # E1 = self.w_encoder
         w_codes = self.w_encoder(x)  # bs x 1 x 512
 
         # Normalize with respect to the center of an average face
@@ -214,6 +216,9 @@ class HyperInverter(nn.Module):
         w_codes = w_codes.unsqueeze(1).repeat([1, num_ws, 1])
 
         # Genenerate W-images
+        # \hat{x}_w = w_images
+        # G(w, theta) = self.decoder[0].synthesis
+        # delta_theta = added_weights
         with torch.no_grad():
             w_images = self.decoder[0].synthesis(
                 w_codes, added_weights=None, noise_mode="const"
@@ -222,15 +227,23 @@ class HyperInverter(nn.Module):
         # ======== Phase 2 ======== #
 
         # Get w_bar code via W bar encoder
+        # h_{x} = w_bar_codes
+        # E2 = self.w_bar_encoder
         w_bar_codes = self.w_bar_encoder(x)
 
         # Get w image features
+        # 画像のリサイズ
+        # \hat{x}_{w} = w_images_resized
         w_images_resized = F.interpolate(
             w_images, size=(256, 256), mode="bilinear", align_corners=False
         )
+        # h_{\hat{x}_{w}} = w_image_codes
+        # E2 = self.w_bar_encoder
         w_image_codes = self.w_bar_encoder(w_images_resized)
 
         # Predict weights added to weights of StyleGAN2-Ada synthesis network
+        # これが多分 delta_theta = residual weights
+        # h = self.hypernet
         predicted_weights = self.hypernet(w_image_codes, w_bar_codes)
 
         # Generate final images from predicted weights and w codes
@@ -243,12 +256,17 @@ class HyperInverter(nn.Module):
                 pred_weights_per_sample[key] = predicted_weights[key][idx]
 
             # Convert to dict in order to feed to generator
+            # これも delta_theta
+            # predicted_weights を辞書にしたのだ
             added_weights = common.convert_predicted_weights_to_dict(
                 pred_weights_per_sample
             )
 
             # Gen final image
             w_code = w_codes[idx].unsqueeze(0)
+            # \hat{x} = final_image
+            # G(w, \hat{theta}) = self.decoder[idx].synthesis
+            # \hat{theta} = theta + added_weights(= delta_theta)
             final_image = (
                 self.decoder[idx]
                 .synthesis(w_code, added_weights=added_weights, noise_mode="const")

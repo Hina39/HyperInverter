@@ -1,3 +1,5 @@
+.ruff_cache
+.venv
 kari/*
 kekka/*
 data/*
@@ -5,3 +7,4 @@ kiritoridata/*
 pretrained_models/*
 wandb/*
 __pycache__
+ffhq_output/*

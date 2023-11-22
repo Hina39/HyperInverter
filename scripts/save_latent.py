@@ -89,7 +89,7 @@ def run() -> None:
 
             # 保存するためにnumpyに変換.
             _predicted_weights = {
-                k: v.cpu().numpy() for k, v in predicted_weights.items()
+                key: value.cpu().numpy() for key, value in predicted_weights.items()
             }
             _w_codes = w_codes.cpu().numpy()
 

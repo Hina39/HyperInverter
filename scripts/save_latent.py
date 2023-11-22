@@ -81,9 +81,11 @@ def run() -> None:
             break
         with torch.no_grad():
             input_cuda = input_batch.cuda().float()
+            # ticは処理の開始時刻.
             tic = time.time()
             # retun_latents=Trueにしたので, w_codesも返ってくる.
             _, _, predicted_weights, w_codes = run_on_batch(input_cuda, net)
+            # tocは処理の終了時刻.
             toc = time.time()
             global_time += toc - tic
 
@@ -93,6 +95,8 @@ def run() -> None:
             }
             _w_codes = w_codes.cpu().numpy()
 
+        # bsはbatch sizeの略.
+        # w_codesの最初のチャネルはバッチサイズになっている.
         bs = w_codes.size(0)
         for _ in range(bs):
             # npz形式で保存.

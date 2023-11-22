@@ -27,10 +27,8 @@ from utils.common import flatten_dict  # noqa: E402
 def run() -> None:
     """潜在変数をnpzファイルとして保存する.
 
-    保存先は, <OUTPUT_DIR_PATH>/latents/以下になります. 画像毎に以下の2つの
-    ファイルが保存されます.
-    - hoge_predicted_weights.npz
-    - hoge_w_codes.npz
+    保存先は, <OUTPUT_DIR_PATH>/latents/以下になります. ファイル名が画像名と同じ
+    になります.
 
     % poetry run python scripts/save_latent.py \
         --exp_dir <OUTPUT_DIR_PATH> \

@@ -4,6 +4,7 @@ kari/*
 kekka/*
 data/*
 kiritoridata/*
+outputs/
 pretrained_models/*
 wandb/*
 __pycache__

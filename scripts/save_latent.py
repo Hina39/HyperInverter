@@ -31,12 +31,12 @@ def run() -> None:
     - hoge_predicted_weights.npz
     - hoge_w_codes.npz
 
-    % poetry run python scripts/_save_latent.py \
-        --exp_dir="<OUTPUT_DIR_PATH>" \
-        --checkpoint_path="pretrained_models/<PRETRAINED_WEIGHT>" \
-        --data_path="<DATA_DIR_PATH>" \
-        --batch_size=1 \
-        --workers=4
+    % poetry run python scripts/save_latent.py \
+        --exp_dir <OUTPUT_DIR_PATH> \
+        --checkpoint_path pretrained_models/<PRETRAINED_WEIGHT> \
+        --data_path <DATA_DIR_PATH>" \
+        --batch_size 1 \
+        --workers 4
 
     """
     test_opts = TestOptions().parse()

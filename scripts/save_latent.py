@@ -21,6 +21,7 @@ from models.hyper_inverter import HyperInverter  # noqa: E402
 from options.test_options import TestOptions  # noqa: E402
 from torch.utils.data import DataLoader  # noqa: E402
 from tqdm import tqdm  # noqa: E402
+from utils.common import flatten_dict  # noqa: E402
 
 
 def run() -> None:
@@ -94,21 +95,22 @@ def run() -> None:
                 key: value.cpu().numpy() for key, value in predicted_weights.items()
             }
             _w_codes = w_codes.cpu().numpy()
+            latents = {
+                "predicted_weights": _predicted_weights,
+                "w_codes": _w_codes,
+            }
 
         # bsはbatch sizeの略.
         # w_codesの最初のチャネルはバッチサイズになっている.
         bs = w_codes.size(0)
         for _ in range(bs):
             # npz形式で保存.
-            save_path_predicted_weights = out_path_latents / (
-                pathlib.Path(dataset.paths[global_i]).stem + "_predicted_weights.npz"
+            save_path_predicted_latents = out_path_latents / (
+                pathlib.Path(dataset.paths[global_i]).stem + ".npz"
             )
-            np.savez(str(save_path_predicted_weights), **_predicted_weights)
-
-            save_path_w_codes = out_path_latents / (
-                pathlib.Path(dataset.paths[global_i]).stem + "_w_codes.npz"
+            np.savez(
+                str(save_path_predicted_latents), **flatten_dict(latents, separator="-")
             )
-            np.savez(str(save_path_w_codes), _w_codes)
             global_i += 1
 
     stats_path = os.path.join(opts.exp_dir, "stats.txt")

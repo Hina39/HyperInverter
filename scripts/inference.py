@@ -64,6 +64,9 @@ def run():
             global_time += toc - tic
 
         bs = final_images.size(0)
+        print(input_cuda.shape)
+        print(final_images.shape)
+        raise NotImplementedError()
         for i in range(bs):
             final_image = tensor2im(final_images[i])
             w_image = tensor2im(w_images[i])

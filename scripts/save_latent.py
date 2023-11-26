@@ -88,20 +88,22 @@ def run() -> None:
             toc = time.time()
             global_time += toc - tic
 
-            # 保存するためにnumpyに変換.
+        # bsはbatch sizeの略.
+        # w_codesの最初のチャネルはバッチサイズになっている.
+        bs = w_codes.size(0)
+        for i in range(bs):
+            # 保存するためにnumpyに変換し, 画像１枚ずつにする.
+            # バッチの次元を保持するためにunsqueeze(0)する.
             _predicted_weights = {
-                key: value.cpu().numpy() for key, value in predicted_weights.items()
+                key: value[i, :, :, :, :].unsqueeze(0).cpu().numpy()
+                for key, value in predicted_weights.items()
             }
-            _w_codes = w_codes.cpu().numpy()
+            _w_codes = w_codes[i, :, :].unsqueeze(0).cpu().numpy()
             latents = {
                 "predicted_weights": _predicted_weights,
                 "w_codes": _w_codes,
             }
 
-        # bsはbatch sizeの略.
-        # w_codesの最初のチャネルはバッチサイズになっている.
-        bs = w_codes.size(0)
-        for _ in range(bs):
             # npz形式で保存.
             save_path_predicted_latents = out_path_latents / (
                 pathlib.Path(dataset.paths[global_i]).stem + ".npz"

@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+import pathlib
 
 
 class TestOptions:
@@ -45,6 +46,12 @@ class TestOptions:
             default=2,
             type=int,
             help="Number of test/inference dataloader workers",
+        )
+        self.parser.add_argument(
+            "--npz_path",
+            dest="npz_path",
+            type=pathlib.Path,
+            help="Path to npz file",
         )
 
     def parse(self):
